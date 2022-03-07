@@ -93,7 +93,7 @@ void changeSize(int w, int h){
 	// Set the viewport to be the entire window
     glViewport(0, 0, w, h);
 	// Set perspective
-	gluPerspective(45.0f ,ratio, 1.0f ,1000.0f);
+	gluPerspective(docInfo.fov ,ratio, docInfo.near, docInfo.far);
 	// return to the model view matrix mode
 	glMatrixMode(GL_MODELVIEW);
 }
@@ -146,24 +146,14 @@ int main(int argc, char **argv){
     XMLNode * pRoot = doc.FirstChild();
     if (pRoot == nullptr) return XML_ERROR_FILE_READ_ERROR;
 
-    int ret = loadFileInfo(pRoot,docInfo);
+    if( loadFileInfo(pRoot,docInfo) != 0)
+    {
+        cout << "Error loading file!" << endl;
+        return 1;
+    }
 
-    //Testar se dados estão corretos
-    for(int i = 0 ; i < 3 ; i++){
-        for(int j = 0; j < 3 ; j++)
-            cout << docInfo.cameraInfo[i][j] << " | ";
-            if( i == 2)
-                cout << endl;
-    }
-    cout << "FOV: " << docInfo.fov << " | Near: " << docInfo.near << " | Far: " << docInfo.far << endl;
-    for(int i=0; i < docInfo.models.size(); i++){
-        cout << "Model " << i << ": " << docInfo.models[i] << endl;
-    }
-    cout << "Going to init Glut" << endl;
     //Init GLUT and the Window
-    int aux = 0;
-    char **auxs;
-    glutInit(&aux,auxs);
+    glutInit(&argc,argv);
     glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
     glutInitWindowPosition(100,100);
     glutInitWindowSize(800,800);
@@ -173,15 +163,12 @@ int main(int argc, char **argv){
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);
 
-    cout << "Setting up..." << endl;
     //OpenGL Settings
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
     //Enter GLUT's main cycle
-    cout << "Entering main cycle..." << endl;
     glutMainLoop();
-    cout << "Left main cycle..." << endl;
 
     return 0;
 }
