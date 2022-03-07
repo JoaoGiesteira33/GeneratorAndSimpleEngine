@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(Engine)
 
+set(OpenGL_GL_PREFERENCE LEGACY)
+
 include_directories(
         ${PROJECT_SOURCE_DIR}/includes
         ${PROJECT_SOURCE_DIR}/src
