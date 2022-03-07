@@ -94,6 +94,11 @@ Engine_EXTERNAL_OBJECTS =
 Engine: CMakeFiles/Engine.dir/main.cpp.o
 Engine: CMakeFiles/Engine.dir/src/tinyxml2.cpp.o
 Engine: CMakeFiles/Engine.dir/build.make
+Engine: /usr/lib/x86_64-linux-gnu/libGL.so
+Engine: /usr/lib/x86_64-linux-gnu/libGLU.so
+Engine: /usr/lib/x86_64-linux-gnu/libglut.so
+Engine: /usr/lib/x86_64-linux-gnu/libXmu.so
+Engine: /usr/lib/x86_64-linux-gnu/libXi.so
 Engine: CMakeFiles/Engine.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/joao/Documents/ComGraf/TrabalhoPratico/code/engine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable Engine"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/Engine.dir/link.txt --verbose=$(VERBOSE)
