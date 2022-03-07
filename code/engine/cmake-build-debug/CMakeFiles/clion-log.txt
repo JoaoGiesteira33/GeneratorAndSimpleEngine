@@ -1,0 +1,4 @@
+/home/extinto77/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/213.6777.58/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/extinto77/Desktop/UNI/3-ano/2-semestre/CG/Trabalho/cg-trabalho-pratico/code/engine
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/extinto77/Desktop/UNI/3-ano/2-semestre/CG/Trabalho/cg-trabalho-pratico/code/engine/cmake-build-debug
