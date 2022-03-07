@@ -37,6 +37,10 @@ assert.h
 -
 
 /home/joao/Documents/ComGraf/TrabalhoPratico/code/engine/main.cpp
+GLUT/glut.h
+-
+GL/glut.h
+-
 iostream
 -
 fstream
@@ -44,6 +48,10 @@ fstream
 vector
 -
 string
+-
+math.h
+-
+cstdlib
 -
 stdio.h
 -

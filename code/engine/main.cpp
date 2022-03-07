@@ -1,7 +1,15 @@
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
+#include <GL/glut.h>
+#endif
+
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <string>
+#include <math.h>
+#include <cstdlib>
 
 #include <stdio.h>
 
@@ -19,6 +27,8 @@ struct XMLInfo{
     float fov, near, far;
     vector<string> models;
 };
+
+XMLInfo docInfo;
 
 int loadFileInfo(XMLNode * pRoot, XMLInfo &docInfo){
     XMLError eResult;
@@ -70,13 +80,64 @@ int loadFileInfo(XMLNode * pRoot, XMLInfo &docInfo){
     return 0;
 }
 
+void changeSize(int w, int h){
+    // Prevent a divide by zero, when window is too short
+	if(h == 0)
+		h = 1;
+	//Compute window's aspect ratio 
+	float ratio = w * 1.0 / h;
+	//Set the projection matrix as current
+	glMatrixMode(GL_PROJECTION);
+	//Load Identity Matrix
+	glLoadIdentity();
+	// Set the viewport to be the entire window
+    glViewport(0, 0, w, h);
+	// Set perspective
+	gluPerspective(45.0f ,ratio, 1.0f ,1000.0f);
+	// return to the model view matrix mode
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void renderScene(void){
+    //Clear Buffers
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    //Set The Camera
+    glLoadIdentity();
+    gluLookAt(docInfo.cameraInfo[0][0],docInfo.cameraInfo[0][1],docInfo.cameraInfo[0][2],
+    docInfo.cameraInfo[1][0],docInfo.cameraInfo[1][1],docInfo.cameraInfo[1][2],
+    docInfo.cameraInfo[2][0],docInfo.cameraInfo[2][1],docInfo.cameraInfo[2][2]);
+
+    //Drawing instructions here
+    //Axis | REMOVER LATER | ONLY FOR TEST
+    glBegin(GL_LINES);
+	    // X axis in red
+	    glColor3f(1.0f, 0.0f, 0.0f);
+	    glVertex3f(	0.0f, 0.0f, 0.0f);
+	    glVertex3f( 100.0f, 0.0f, 0.0f);
+	    // Y Axis in Green
+	    glColor3f(0.0f, 1.0f, 0.0f);
+	    glVertex3f(0.0f, 0.0f, 0.0f);
+	    glVertex3f(0.0f, 100.0f, 0.0f);
+	    // Z Axis in Blue
+	    glColor3f(0.0f, 0.0f, 1.0f);
+	    glVertex3f(0.0f, 0.0f, 0.0f);
+	    glVertex3f(0.0f, 0.0f, 100.0f);
+    glEnd();
+
+    glutWireCube(5);
+
+    glutPostRedisplay();
+    //End of Frame
+    glutSwapBuffers();
+}
+
 int main(int argc, char **argv){
     const char* file_name = argv[1];
     cout << "FileName: " << file_name << endl;
 
     XMLDocument doc;
     XMLPrinter printer;
-    XMLInfo docInfo;
 
     XMLError eResult = doc.LoadFile(file_name);
     XMLCheckResult(eResult);
@@ -98,6 +159,29 @@ int main(int argc, char **argv){
     for(int i=0; i < docInfo.models.size(); i++){
         cout << "Model " << i << ": " << docInfo.models[i] << endl;
     }
+    cout << "Going to init Glut" << endl;
+    //Init GLUT and the Window
+    int aux = 0;
+    char **auxs;
+    glutInit(&aux,auxs);
+    glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
+    glutInitWindowPosition(100,100);
+    glutInitWindowSize(800,800);
+    glutCreateWindow(file_name);
+
+    //Required callback registry
+    glutDisplayFunc(renderScene);
+    glutReshapeFunc(changeSize);
+
+    cout << "Setting up..." << endl;
+    //OpenGL Settings
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+
+    //Enter GLUT's main cycle
+    cout << "Entering main cycle..." << endl;
+    glutMainLoop();
+    cout << "Left main cycle..." << endl;
 
     return 0;
 }
