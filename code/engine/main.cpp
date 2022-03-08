@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <string>
 #include <math.h>
@@ -28,7 +29,51 @@ struct XMLInfo{
     vector<string> models;
 };
 
+struct Point{
+    GLfloat x;
+    GLfloat y;
+    GLfloat z;
+};
+
+vector<Point*> modelsInfo; //Load all model .3d file's info here.
 XMLInfo docInfo;
+
+void drawTriangle(Point a, Point b, Point c){
+    glBegin(GL_TRIANGLES);
+	    glVertex3f(a.x,a.y,a.z);
+	    glVertex3f(b.x,b.y,b.z);
+	    glVertex3f(c.x,c.y,c.z);
+    glEnd();
+}
+
+int loadModelInfo(const char* file_name){
+    string line;
+    ifstream myfile(file_name);
+    
+    if (!myfile) {
+        cerr << "Unable to open file " << file_name;
+        exit(1);
+    }
+
+    if (myfile.is_open())
+    {
+      while ( getline(myfile,line) )
+      {
+        stringstream ss(line);
+        for(int i=0 ; i<3 ; i++)
+        {
+            struct Point* p = new Point;
+            ss >> p->x;
+            ss >> p->y;
+            ss >> p->z;
+            modelsInfo.push_back(p);
+        }
+      }
+      myfile.close();
+    }
+
+    return 0;
+}
 
 int loadFileInfo(XMLNode * pRoot, XMLInfo &docInfo){
     XMLError eResult;
@@ -109,23 +154,9 @@ void renderScene(void){
     docInfo.cameraInfo[2][0],docInfo.cameraInfo[2][1],docInfo.cameraInfo[2][2]);
 
     //Drawing instructions here
-    //Axis | REMOVER LATER | ONLY FOR TEST
-    glBegin(GL_LINES);
-	    // X axis in red
-	    glColor3f(1.0f, 0.0f, 0.0f);
-	    glVertex3f(	0.0f, 0.0f, 0.0f);
-	    glVertex3f( 100.0f, 0.0f, 0.0f);
-	    // Y Axis in Green
-	    glColor3f(0.0f, 1.0f, 0.0f);
-	    glVertex3f(0.0f, 0.0f, 0.0f);
-	    glVertex3f(0.0f, 100.0f, 0.0f);
-	    // Z Axis in Blue
-	    glColor3f(0.0f, 0.0f, 1.0f);
-	    glVertex3f(0.0f, 0.0f, 0.0f);
-	    glVertex3f(0.0f, 0.0f, 100.0f);
-    glEnd();
-
-    glutWireCube(5);
+    for(int i=0 ; i < modelsInfo.size() - 2 ; i+=3){
+        drawTriangle(*modelsInfo[i],*modelsInfo[i+1],*modelsInfo[i+2]);
+    }
 
     glutPostRedisplay();
     //End of Frame
@@ -150,6 +181,12 @@ int main(int argc, char **argv){
     {
         cout << "Error loading file!" << endl;
         return 1;
+    }
+
+    for(int i = 0 ; i < docInfo.models.size() ; i++){
+        const char * aux = docInfo.models[i].c_str();
+        cout << "Reading new File: " << aux << endl;
+        loadModelInfo(aux);
     }
 
     //Init GLUT and the Window
