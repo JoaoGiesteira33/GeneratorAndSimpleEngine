@@ -67,13 +67,15 @@ Point new_point(float x, float y, float z) {
 void write_point(float x, float y, float z, std::ofstream& file){
     file << std::to_string(x) << " "
          << std::to_string(y) << " "
-         << std::to_string(z) << ";";
+         << std::to_string(z)
+         << std::endl;
 }
 
 void write_point(Point p, std::ofstream& file) {
     file << std::to_string(p->x) << " "
          << std::to_string(p->y) << " "
-         << std::to_string(p->z) << ";";
+         << std::to_string(p->z)
+         << std::endl;
 }
 
 int main(int argc, char **argv) {
