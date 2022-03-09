@@ -1,4 +1,4 @@
 .idea
-cmake-build-debug
+cmake-build-debug/
 .vscode
-code/engine/cmake-build-debug
+code/engine/cmake-build-debug/

@@ -2,6 +2,9 @@
 #include <fstream>
 #include <string>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 
 typedef struct point{
     float x;
@@ -77,6 +80,48 @@ void write_point(Point p, std::ofstream& file) {
          << std::to_string(p->z)
          << std::endl;
 }
+
+
+void generate_cone(float radius, float height, int slices , int stacks){
+    float alpha = 2*M_PI / slices;
+    float yratio = height/(float)stacks;
+
+    for (int i=0; i<slices; i++){
+        float s1 = radius*sin((float)i*alpha);
+        float s2 = radius*sin((float)(i+1)*alpha);
+        float c1 = radius*cos((float)i*alpha);
+        float c2 = radius*cos((float)(i+1)*alpha);
+
+
+        glVertex3f(s2, 0, c2);
+        glVertex3f(s1, 0, c1);
+        glVertex3f(0, 0, 0);
+
+        for(int j=0;j<stacks;j++){
+            float newR = -1*((((float)(j+1)*yratio)-height)*radius)/height;
+            float news1 = newR*sin(((float)i)*alpha);
+            float news2 = newR*sin(((float)(i+1))*alpha);
+            float newc1 = newR*cos(((float)i)*alpha);
+            float newc2 = newR*cos(((float)(i+1))*alpha);
+
+            glVertex3f(s1, yratio*((float)j), c1);
+            glVertex3f(s2, yratio*((float)j), c2);
+            glVertex3f(news1, yratio*((float)(j+1)), newc1);
+
+            if(j+1<stacks){
+                glVertex3f(news2, yratio*((float)(j+1)), newc2);
+                glVertex3f(news1, yratio*((float)(j+1)), newc1);
+                glVertex3f(s2, yratio*((float)j), c2);
+            }
+            s1=news1;
+            s2=news2;
+            c1=newc1;
+            c2=newc2;
+        }
+    }
+    glEnd();
+}
+
 
 int main(int argc, char **argv) {
     if(!argv[1] || !*argv[1]){
