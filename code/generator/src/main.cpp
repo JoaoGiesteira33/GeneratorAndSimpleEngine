@@ -12,6 +12,20 @@ typedef struct point{
     float z;
 }*Point;
 
+void write_point(float x, float y, float z, std::ofstream& file){
+    file << std::to_string(x) << " "
+         << std::to_string(y) << " "
+         << std::to_string(z)
+         << std::endl;
+}
+
+void write_point(Point p, std::ofstream& file) {
+    file << std::to_string(p->x) << " "
+         << std::to_string(p->y) << " "
+         << std::to_string(p->z)
+         << std::endl;
+}
+
 int gen_sphere(char** args){
     int radius = std::atoi(args[2]);
     int slices = std::atoi(args[3]);
@@ -35,7 +49,7 @@ int gen_box(char** args){
 }
 
 
-void generate_cone(float radius, float height, int slices , int stacks, ){
+void generate_cone(float radius, float height, int slices , int stacks, std::ofstream& file){
     float alpha = 2*M_PI / slices;
     float yratio = height/(float)stacks;
 
@@ -46,9 +60,9 @@ void generate_cone(float radius, float height, int slices , int stacks, ){
         float c2 = radius*cos((float)(i+1)*alpha);
 
 
-        glVertex3f(s2, 0, c2);
-        glVertex3f(s1, 0, c1);
-        glVertex3f(0, 0, 0);
+        write_point(s2, 0, c2, file);
+        write_point(s1, 0, c1, file);
+        write_point(0, 0, 0, file);
 
         for(int j=0;j<stacks;j++){
             float newR = -1*((((float)(j+1)*yratio)-height)*radius)/height;
@@ -57,14 +71,14 @@ void generate_cone(float radius, float height, int slices , int stacks, ){
             float newc1 = newR*cos(((float)i)*alpha);
             float newc2 = newR*cos(((float)(i+1))*alpha);
 
-            glVertex3f(s1, yratio*((float)j), c1);
-            glVertex3f(s2, yratio*((float)j), c2);
-            glVertex3f(news1, yratio*((float)(j+1)), newc1);
+            write_point(s1, yratio*((float)j), c1, file);
+            write_point(s2, yratio*((float)j), c2, file);
+            write_point(news1, yratio*((float)(j+1)), newc1, file);
 
             if(j+1<stacks){
-                glVertex3f(news2, yratio*((float)(j+1)), newc2);
-                glVertex3f(news1, yratio*((float)(j+1)), newc1);
-                glVertex3f(s2, yratio*((float)j), c2);
+                write_point(news2, yratio*((float)(j+1)), newc2, file);
+                write_point(news1, yratio*((float)(j+1)), newc1, file);
+                write_point(s2, yratio*((float)j), c2, file);
             }
             s1=news1;
             s2=news2;
@@ -72,7 +86,6 @@ void generate_cone(float radius, float height, int slices , int stacks, ){
             c2=newc2;
         }
     }
-    glEnd();
 }
 
 int gen_cone(char** args){
@@ -109,19 +122,7 @@ Point new_point(float x, float y, float z) {
     return p;
 }
 
-void write_point(float x, float y, float z, std::ofstream& file){
-    file << std::to_string(x) << " "
-         << std::to_string(y) << " "
-         << std::to_string(z)
-         << std::endl;
-}
 
-void write_point(Point p, std::ofstream& file) {
-    file << std::to_string(p->x) << " "
-         << std::to_string(p->y) << " "
-         << std::to_string(p->z)
-         << std::endl;
-}
 
 
 
