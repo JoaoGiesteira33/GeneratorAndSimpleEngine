@@ -33,54 +33,9 @@ int gen_box(char** args){
     file.close();
     return 0;
 }
-int gen_cone(char** args){
-    int radius = std::atoi(args[2]);
-    int height = std::atoi(args[3]);
-    int slices = std::atoi(args[4]);
-    int stacks = std::atoi(args[5]);
-
-    std::ofstream file;
-    file.open(args[6]);
-    //cenas
-    file.close();
-    return 0;
-}
-int gen_plane(char** args){
-    int len = std::atoi(args[2]);
-    int divisions = std::atoi(args[3]);
-
-    std::ofstream file;
-    file.open(args[4]);
-    //cenas
-    file.close();
-    return 0;
-}
-
-int check_args(int n, char **args){
-    for(int i = 0; i < n; i++)
-        if(!args[i] || !*args[i]) return 0;
-    return 1;
-}
-Point new_point(float x, float y, float z) {
-    Point p = (Point) (malloc(sizeof(struct point)));
-    p->x = x; p->y = y; p->z = z;
-    return p;
-}
-
-void write_point(float x, float y, float z, std::ofstream& file){
-    file << std::to_string(x) << " "
-         << std::to_string(y) << " "
-         << std::to_string(z) << ";";
-}
-
-void write_point(Point p, std::ofstream& file) {
-    file << std::to_string(p->x) << " "
-         << std::to_string(p->y) << " "
-         << std::to_string(p->z) << ";";
-}
 
 
-void generate_cone(float radius, float height, int slices , int stacks){
+void generate_cone(float radius, float height, int slices , int stacks, ){
     float alpha = 2*M_PI / slices;
     float yratio = height/(float)stacks;
 
@@ -119,6 +74,54 @@ void generate_cone(float radius, float height, int slices , int stacks){
     }
     glEnd();
 }
+
+int gen_cone(char** args){
+    int radius = std::atoi(args[2]);
+    int height = std::atoi(args[3]);
+    int slices = std::atoi(args[4]);
+    int stacks = std::atoi(args[5]);
+
+    std::ofstream file;
+    file.open(args[6]);
+    generate_cone(radius, height, slices , stacks, file);
+    file.close();
+    return 0;
+}
+int gen_plane(char** args){
+    int len = std::atoi(args[2]);
+    int divisions = std::atoi(args[3]);
+
+    std::ofstream file;
+    file.open(args[4]);
+    //cenas
+    file.close();
+    return 0;
+}
+
+int check_args(int n, char **args){
+    for(int i = 0; i < n; i++)
+        if(!args[i] || !*args[i]) return 0;
+    return 1;
+}
+Point new_point(float x, float y, float z) {
+    Point p = (Point) (malloc(sizeof(struct point)));
+    p->x = x; p->y = y; p->z = z;
+    return p;
+}
+
+void write_point(float x, float y, float z, std::ofstream& file){
+    file << std::to_string(x) << " "
+         << std::to_string(y) << " "
+         << std::to_string(z) << "\n";
+}
+
+void write_point(Point p, std::ofstream& file) {
+    file << std::to_string(p->x) << " "
+         << std::to_string(p->y) << " "
+         << std::to_string(p->z) << "\n";
+}
+
+
 
 
 int main(int argc, char **argv) {
