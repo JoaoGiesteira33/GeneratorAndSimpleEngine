@@ -1,3 +1,0 @@
-/home/extinto77/Desktop/UNI/3-ano/2-semestre/CG/Trabalho/cg-trabalho-pratico/code/engine/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/extinto77/Desktop/UNI/3-ano/2-semestre/CG/Trabalho/cg-trabalho-pratico/code/engine/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/extinto77/Desktop/UNI/3-ano/2-semestre/CG/Trabalho/cg-trabalho-pratico/code/engine/cmake-build-debug/CMakeFiles/Engine.dir

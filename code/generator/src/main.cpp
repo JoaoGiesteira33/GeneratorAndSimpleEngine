@@ -6,22 +6,53 @@
 #include <math.h>
 
 
-struct Point {
+typedef struct point{
     float x;
     float y;
     float z;
-};
+}*Point;
 
-int gen_sphere(int radius, int slices, int stacks, std::string filename){
+int gen_sphere(char** args){
+    int radius = std::atoi(args[2]);
+    int slices = std::atoi(args[3]);
+    int stacks = std::atoi(args[4]);
+
+    std::ofstream file;
+    file.open(args[5]);
+    //cenas
+    file.close();
     return 0;
 }
-int gen_box(int size, int grid, std::string filename){
+int gen_box(char** args){
+    int size = std::atoi(args[2]);
+    int grid = std::atoi(args[3]);
+
+    std::ofstream file;
+    file.open(args[4]);
+    //cenas
+    file.close();
     return 0;
 }
-int gen_cone(int radius, int height, int slices, int stacks, std::string filename){
+int gen_cone(char** args){
+    int radius = std::atoi(args[2]);
+    int height = std::atoi(args[3]);
+    int slices = std::atoi(args[4]);
+    int stacks = std::atoi(args[5]);
+
+    std::ofstream file;
+    file.open(args[6]);
+    //cenas
+    file.close();
     return 0;
 }
-int gen_plane(int len, int divisions, std::string filename){
+int gen_plane(char** args){
+    int len = std::atoi(args[2]);
+    int divisions = std::atoi(args[3]);
+
+    std::ofstream file;
+    file.open(args[4]);
+    //cenas
+    file.close();
     return 0;
 }
 
@@ -30,28 +61,22 @@ int check_args(int n, char **args){
         if(!args[i] || !*args[i]) return 0;
     return 1;
 }
-
-void write_in_file(std::string file){
-    std::ofstream writer(file, std::ios::out);
-
-    //insercoes aqui
-
-    writer.close();
+Point new_point(float x, float y, float z) {
+    Point p = (Point) (malloc(sizeof(struct point)));
+    p->x = x; p->y = y; p->z = z;
+    return p;
 }
 
-std::string point2String(Point pt){
-    std::string str = std::to_string(pt.x) + " " + 
-                      std::to_string(pt.y) + " " +
-                      std::to_string(pt.z);
-    return str;
+void write_point(float x, float y, float z, std::ofstream& file){
+    file << std::to_string(x) << " "
+         << std::to_string(y) << " "
+         << std::to_string(z) << ";";
 }
 
-void write_triangle(Point pt1, Point pt2, Point pt3, std::ofstream &writer){
-    std::string str = point2String(pt1) + " " + 
-                      point2String(pt2) + " " + 
-                      point2String(pt3) + "\n";
-
-    writer.write(str.c_str(), str.size() + 1);
+void write_point(Point p, std::ofstream& file) {
+    file << std::to_string(p->x) << " "
+         << std::to_string(p->y) << " "
+         << std::to_string(p->z) << ";";
 }
 
 
@@ -105,16 +130,16 @@ int main(int argc, char **argv) {
     std::string figure = argv[1];
 
     if(figure == "sphere" && check_args(4, argv+2))
-        gen_sphere(std::atoi(argv[2]),std::atoi(argv[3]),std::atoi(argv[4]),argv[5]);
+        gen_sphere(argv);
 
     else if (figure == "plane" && check_args(3, argv+2))
-        gen_plane(std::atoi(argv[2]),std::atoi(argv[3]), argv[4]);
+        gen_plane(argv);
 
     else if (figure == "cone" && check_args(5, argv+2))
-        gen_cone(std::atoi(argv[2]),std::atoi(argv[3]),std::atoi(argv[4]),std::atoi(argv[5]), argv[6]);
+        gen_cone(argv);
 
     else if (figure == "box" && check_args(3, argv+2))
-        gen_box(std::atoi(argv[2]),std::atoi(argv[3]), argv[4]);
+        gen_box(argv);
 
     else {
         std::cout<<"Invalid input"<<std::endl;
