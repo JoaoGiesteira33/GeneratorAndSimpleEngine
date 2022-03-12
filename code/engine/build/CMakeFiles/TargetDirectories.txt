@@ -1,3 +1,0 @@
-/home/joao/Documents/ComGraf/TrabalhoPratico/code/engine/build/CMakeFiles/rebuild_cache.dir
-/home/joao/Documents/ComGraf/TrabalhoPratico/code/engine/build/CMakeFiles/edit_cache.dir
-/home/joao/Documents/ComGraf/TrabalhoPratico/code/engine/build/CMakeFiles/Engine.dir
