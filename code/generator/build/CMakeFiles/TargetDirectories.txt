@@ -1,3 +1,3 @@
-/Users/daniel/projects/cg-trabalho-pratico/code/generator/build/CMakeFiles/rebuild_cache.dir
-/Users/daniel/projects/cg-trabalho-pratico/code/generator/build/CMakeFiles/edit_cache.dir
-/Users/daniel/projects/cg-trabalho-pratico/code/generator/build/CMakeFiles/Generator.dir
+/home/joao/Documents/ComGraf/TrabalhoPratico/code/generator/build/CMakeFiles/edit_cache.dir
+/home/joao/Documents/ComGraf/TrabalhoPratico/code/generator/build/CMakeFiles/rebuild_cache.dir
+/home/joao/Documents/ComGraf/TrabalhoPratico/code/generator/build/CMakeFiles/Generator.dir

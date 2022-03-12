@@ -2,3 +2,5 @@
 cmake-build-debug/
 .vscode
 code/engine/cmake-build-debug/
+code/engine/build/
+code/generator/build/
