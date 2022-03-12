@@ -52,33 +52,37 @@ int gen_box(char** args){
 void generate_cone(float radius, float height, int slices , int stacks, std::ofstream& file){
     float alpha = 2*M_PI / slices;
     float yratio = height/(float)stacks;
+    int iaux, jaux;
 
-    for (int i=0; i<slices; i++){
-        float s1 = radius*sin((float)i*alpha);
-        float s2 = radius*sin((float)(i+1)*alpha);
-        float c1 = radius*cos((float)i*alpha);
-        float c2 = radius*cos((float)(i+1)*alpha);
+    for (iaux=0; iaux<slices; iaux++){
+        float i = (float) iaux;
+        float s1 = radius*sin(i*alpha);
+        float s2 = radius*sin((i+1)*alpha);
+        float c1 = radius*cos(i*alpha);
+        float c2 = radius*cos((i+1)*alpha);
 
 
         write_point(s2, 0, c2, file);
         write_point(s1, 0, c1, file);
         write_point(0, 0, 0, file);
 
-        for(int j=0;j<stacks;j++){
-            float newR = -1*((((float)(j+1)*yratio)-height)*radius)/height;
-            float news1 = newR*sin(((float)i)*alpha);
-            float news2 = newR*sin(((float)(i+1))*alpha);
-            float newc1 = newR*cos(((float)i)*alpha);
-            float newc2 = newR*cos(((float)(i+1))*alpha);
+        for(jaux=0;jaux<stacks;jaux++){
+            float j = (float)jaux;
 
-            write_point(s1, yratio*((float)j), c1, file);
-            write_point(s2, yratio*((float)j), c2, file);
-            write_point(news1, yratio*((float)(j+1)), newc1, file);
+            float newR = -1*((((j+1)*yratio)-height)*radius)/height;
+            float news1 = newR*sin(i*alpha);
+            float news2 = newR*sin((i+1)*alpha);
+            float newc1 = newR*cos(i*alpha);
+            float newc2 = newR*cos((i+1)*alpha);
+
+            write_point(s1, yratio*j, c1, file);
+            write_point(s2, yratio*j, c2, file);
+            write_point(news1, yratio*(j+1), newc1, file);
 
             if(j+1<stacks){
-                write_point(news2, yratio*((float)(j+1)), newc2, file);
-                write_point(news1, yratio*((float)(j+1)), newc1, file);
-                write_point(s2, yratio*((float)j), c2, file);
+                write_point(news2, yratio*(j+1), newc2, file);
+                write_point(news1, yratio*(j+1), newc1, file);
+                write_point(s2, yratio*j, c2, file);
             }
             s1=news1;
             s2=news2;
@@ -87,7 +91,6 @@ void generate_cone(float radius, float height, int slices , int stacks, std::ofs
         }
     }
 }
-
 int gen_cone(char** args){
     int radius = std::atoi(args[2]);
     int height = std::atoi(args[3]);
@@ -100,6 +103,7 @@ int gen_cone(char** args){
     file.close();
     return 0;
 }
+
 int gen_plane(char** args){
     int len = std::atoi(args[2]);
     int divisions = std::atoi(args[3]);
