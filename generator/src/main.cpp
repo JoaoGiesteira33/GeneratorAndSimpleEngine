@@ -375,10 +375,52 @@ int gen_cone(char** args){
 int gen_plane(char** args){
     int len = std::atoi(args[2]);
     int divisions = std::atoi(args[3]);
+    float sub_size = (float)len/(float)divisions;
 
     std::ofstream file;
     file.open(args[4]);
-    //cenas
+
+    for(int i=0; i<divisions ; i++){
+        for(int j=0; j<divisions; j++){
+            
+            //BOTTOM
+            float p1x=i*sub_size-(float)(len/2);
+            float p1y=0;                                                          
+            float p1z=j*sub_size-(float)(len/2);   
+
+            float p2x=p1x;
+            float p2y=p1y;
+            float p2z=p1z+sub_size;                                              
+                                                                                
+            float p3x=p1x+sub_size;
+            float p3y=p1y;
+            float p3z=p1z;
+
+            float p4x=p1x;
+            float p4y=p1y;
+            float p4z=p1z+sub_size;
+
+            float p5x=p4x+sub_size;
+            float p5y=p4y;
+            float p5z=p4z;
+
+            float p6x=p4x+sub_size;
+            float p6y=p4y;
+            float p6z=p4z-sub_size;
+
+            
+
+            write_point(p1x,p1y,p1z,file);
+            write_point(p2x,p2y,p2z,file);
+            write_point(p3x,p3y,p3z,file);
+            file<<std::endl;
+            write_point(p4x,p4y,p4z,file);
+            write_point(p5x,p5y,p5z,file);
+            write_point(p6x,p6y,p6z,file);
+            file<<std::endl;
+        }
+    }
+    
     file.close();
     return 0;
 }
