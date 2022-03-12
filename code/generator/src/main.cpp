@@ -27,7 +27,7 @@ void write_point(Point p, std::ofstream& file) {
 int gen_sphere(char** args){
     int radius = std::atoi(args[2]);
     int slices = std::atoi(args[3]);
-    int stacks = std::atoi(args[4]);§
+    int stacks = std::atoi(args[4]);
 
     std::ofstream file;
     file.open(args[5]);
