@@ -31,7 +31,46 @@ int gen_sphere(char** args){
 
     std::ofstream file;
     file.open(args[5]);
-    //cenas
+    float ang_stack = M_PI / stacks;
+	float ang_slice = (2 * M_PI) / slices;
+
+	for(int i = 0 ; i < slices ; i++){ //Iterate Slices
+		float alpha = (i * ang_slice);
+		float next_alpha = ((i+1) * ang_slice);
+
+		for(int j = 0 ; j < stacks ; j++){ //Iterate Stacks
+			float beta = (j * ang_stack) - (M_PI / 2);
+			float next_beta = ((j+1) * ang_stack) - (M_PI / 2);
+
+			//Point 1 Coords
+			float x_1 = radius * cosf(beta) * sinf( alpha );
+			float y_1 = radius * sinf( beta );
+			float z_1 = radius * cosf(beta) * cosf( alpha );
+			//Point 2 Coords
+			float x_2 = radius * cosf(next_beta) * sinf( next_alpha );
+			float y_2 = radius * sinf( next_beta );
+			float z_2 = radius * cosf(next_beta) * cosf( next_alpha );
+			//Point 3 Coords
+			float x_3 = radius * cosf(next_beta) * sinf( alpha );
+			float y_3 = radius * sinf( next_beta );
+			float z_3 = radius * cosf(next_beta) * cosf( alpha );
+			//Point 4 Coords
+			float x_4 = radius * cosf(beta) * sinf( next_alpha );
+			float y_4 = radius * sinf( beta );
+			float z_4 = radius * cosf(beta) * cosf( next_alpha );
+	
+			write_point(x_1,y_1,z_1,file);
+			write_point(x_2,y_2,z_2,file);
+			write_point(x_3,y_3,z_3,file);
+            file<<std::endl;
+
+			write_point(x_1,y_1,z_1,file);
+			write_point(x_4,y_4,z_4,file);
+			write_point(x_2,y_2,z_2,file);
+            file<<std::endl;
+		}
+	}
+
     file.close();
     return 0;
 }
@@ -354,11 +393,6 @@ Point new_point(float x, float y, float z) {
     p->x = x; p->y = y; p->z = z;
     return p;
 }
-
-
-
-
-
 
 int main(int argc, char **argv) {
     if(!argv[1] || !*argv[1]){

@@ -164,6 +164,10 @@ void renderScene(void){
 }
 
 int main(int argc, char **argv){
+    if(!argv[1] || !*argv[1]) {
+        cout << "Invalid Filename";
+        return 1;
+    }
     const char* file_name = argv[1];
     cout << "FileName: " << file_name << endl;
 
@@ -203,8 +207,10 @@ int main(int argc, char **argv){
     //OpenGL Settings
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     //Enter GLUT's main cycle
+
     glutMainLoop();
 
     return 0;
