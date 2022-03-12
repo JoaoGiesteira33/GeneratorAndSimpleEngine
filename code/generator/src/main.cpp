@@ -37,13 +37,229 @@ int gen_sphere(char** args){
     file.close();
     return 0;
 }
+
+void box_front_back(int size, int grid, float sub_size, std::ofstream& file){
+    //std::cout<<"------FRONT & BACK--------\n";
+    for(int i=0; i<grid ; i++){
+        for(int j=0; j<grid; j++){
+            //BACK
+            float p1x=j*sub_size;
+            float p1y=i*sub_size;                                                    
+            float p1z=0;                                          
+                                                                                
+            float p2x=p1x;
+            float p2y=p1y+sub_size;
+            float p2z=p1z;
+
+            float p3x=p1x+sub_size;
+            float p3y=p1y;
+            float p3z=p1z;
+
+            float p4x=p1x;
+            float p4y=p1y+sub_size;
+            float p4z=p1z;
+
+            float p5x=p4x+sub_size;
+            float p5y=p4y;
+            float p5z=p4z;
+
+            float p6x=p4x+sub_size;
+            float p6y=p4y-sub_size;
+            float p6z=p4z;
+
+            //FRONT
+            float p7x=p2x;
+            float p7y=p2y;                                                 
+            float p7z=p2z+size;
+
+            float p9x=p3x;
+            float p9y=p3y;
+            float p9z=p3z+size;                                                         
+                                                                                
+            float p8x=p1x;
+            float p8y=p1y;
+            float p8z=p1z+size;
+
+            float p10x=p6x;
+            float p10y=p6y;
+            float p10z=p6z+size;
+            float p11x=p5x;
+            float p11y=p5y;
+            float p11z=p5z+size;
+
+            float p12x=p4x;
+            float p12y=p4y;
+            float p12z=p4z+size;
+
+            write_point(p1x,p1y,p1z,file);
+            write_point(p2x,p2y,p2z,file);
+            write_point(p3x,p3y,p3z,file);
+            write_point(p4x,p4y,p4z,file);
+            write_point(p5x,p5y,p5z,file);
+            write_point(p6x,p6y,p6z,file);
+            write_point(p7x,p7y,p7z,file);
+            write_point(p8x,p8y,p8z,file);
+            write_point(p9x,p9y,p9z,file);
+            write_point(p10x,p10y,p10z,file);
+            write_point(p11x,p11y,p11z,file);
+            write_point(p12x,p12y,p12z,file);
+
+        }
+    }
+}
+
+void box_left_right(int size, int grid, float sub_size, std::ofstream& file){
+    //std::cout<<"------LEFT & RIGHT--------\n";
+    for(int i=0; i<grid ; i++){
+        for(int j=0; j<grid; j++){
+            //LEFT
+            float p1x=0;
+            float p1y=i*sub_size;                                                        
+            float p1z=j*sub_size;
+
+            float p2x=p1x;
+            float p2y=p1y;
+            float p2z=p1z+sub_size;
+
+            float p3x=p1x;
+            float p3y=p1y+sub_size;
+            float p3z=p1z;
+
+            float p4x=p1x;
+            float p4y=p1y+sub_size;
+            float p4z=p1z;
+
+            float p5x=p4x;
+            float p5y=p4y-sub_size;
+            float p5z=p4z+sub_size;
+
+            float p6x=p4x;
+            float p6y=p4y;
+            float p6z=p4z+sub_size;
+
+            //RIGHT
+            float p7x=p3x+size;
+            float p7y=p3y;
+            float p7z=p3z;                                            
+                                                                          
+            float p8x=p2x+size;
+            float p8y=p2y;
+            float p8z=p2z;
+
+            float p9x=p1x+size;
+            float p9y=p1y;                                                 
+            float p9z=p1z;
+
+            float p10x=p6x+size;
+            float p10y=p6y;
+            float p10z=p6z;
+
+            float p11x=p5x+size;
+            float p11y=p5y;
+            float p11z=p5z;
+
+            float p12x=p4x+size;
+            float p12y=p4y;
+            float p12z=p4z;
+
+            write_point(p1x,p1y,p1z,file);
+            write_point(p2x,p2y,p2z,file);
+            write_point(p3x,p3y,p3z,file);
+            write_point(p4x,p4y,p4z,file);
+            write_point(p5x,p5y,p5z,file);
+            write_point(p6x,p6y,p6z,file);
+            write_point(p7x,p7y,p7z,file);
+            write_point(p8x,p8y,p8z,file);
+            write_point(p9x,p9y,p9z,file);
+            write_point(p10x,p10y,p10z,file);
+            write_point(p11x,p11y,p11z,file);
+            write_point(p12x,p12y,p12z,file);
+        }
+    }
+}
+
+void box_top_bottom(int size, int grid, float sub_size, std::ofstream& file){
+    //std::cout<<"------TOP & BOTTOM--------\n";
+    for(int i=0; i<grid ; i++){
+        for(int j=0; j<grid; j++){
+            
+            //BOTTOM
+            float p1x=i*sub_size;
+            float p1y=0;                                                          
+            float p1z=j*sub_size;                                                 
+                                                                                
+            float p2x=p1x+sub_size;
+            float p2y=p1y;
+            float p2z=p1z;
+
+            float p3x=p1x;
+            float p3y=p1y;
+            float p3z=p1z+sub_size;
+
+            float p4x=p1x;
+            float p4y=p1y;
+            float p4z=p1z+sub_size;
+
+            float p5x=p4x+sub_size;
+            float p5y=p4y;
+            float p5z=p4z-sub_size;
+
+            float p6x=p4x+sub_size;
+            float p6y=p4y;
+            float p6z=p4z;
+
+            //TOP
+            float p7x=p3x;
+            float p7y=p3y+size;
+            float p7z=p3z;                                                     
+                                                                                
+            float p8x=p2x;
+            float p8y=p2y+size;
+            float p8z=p2z;
+
+            float p9x=p1x;
+            float p9y=p1y+size;                                                          
+            float p9z=p1z;
+            
+            float p10x=p6x;
+            float p10y=p6y+size;
+            float p10z=p6z;
+
+            float p11x=p5x;
+            float p11y=p5y+size;
+            float p11z=p5z;
+
+            float p12x=p4x;
+            float p12y=p4y+size;
+            float p12z=p4z;
+
+            write_point(p1x,p1y,p1z,file);
+            write_point(p2x,p2y,p2z,file);
+            write_point(p3x,p3y,p3z,file);
+            write_point(p4x,p4y,p4z,file);
+            write_point(p5x,p5y,p5z,file);
+            write_point(p6x,p6y,p6z,file);
+            write_point(p7x,p7y,p7z,file);
+            write_point(p8x,p8y,p8z,file);
+            write_point(p9x,p9y,p9z,file);
+            write_point(p10x,p10y,p10z,file);
+            write_point(p11x,p11y,p11z,file);
+            write_point(p12x,p12y,p12z,file);
+        }
+    }
+}
 int gen_box(char** args){
     int size = std::atoi(args[2]);
     int grid = std::atoi(args[3]);
+    float sub_size = (float)size/(float)grid;
 
     std::ofstream file;
     file.open(args[4]);
-    //cenas
+    
+    box_left_right(size,grid,sub_size,file);
+    box_top_bottom(size,grid,sub_size,file);
+    box_front_back(size,grid,sub_size,file);
+
     file.close();
     return 0;
 }
