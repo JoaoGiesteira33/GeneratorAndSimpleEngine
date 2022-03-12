@@ -164,6 +164,10 @@ void renderScene(void){
 }
 
 int main(int argc, char **argv){
+    if(!argv[1] || !*argv[1]) {
+        cout << "Invalid Filename";
+        return 1;
+    }
     const char* file_name = argv[1];
     cout << "FileName: " << file_name << endl;
 
