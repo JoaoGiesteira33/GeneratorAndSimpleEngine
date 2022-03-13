@@ -38,6 +38,25 @@ struct Point{
 vector<Point*> modelsInfo; //Load all model .3d file's info here.
 XMLInfo docInfo;
 
+int moved_camera = 0;
+float camera_alpha = 0.0f;
+float camera_beta = 0.0f;
+float camera_radius = 5.0f;
+
+float camera_x = 5.0f;
+float camera_y = 5.0f;
+float camera_z = 5.0f;
+
+void orbitalCamera(){
+	camera_x = camera_radius * cosf(camera_beta) * sinf(camera_alpha);
+	camera_y = camera_radius * sinf(camera_beta);
+	camera_z = camera_radius * cosf(camera_beta) * cosf(camera_alpha);
+
+	gluLookAt(camera_x, camera_y, camera_z,
+			      0.0f,0.0f,0.0f,
+				  0.0f,1.0f,0.0f);
+}
+
 void drawTriangle(Point a, Point b, Point c){
     glBegin(GL_TRIANGLES);
 	    glVertex3f(a.x,a.y,a.z);
@@ -149,9 +168,14 @@ void renderScene(void){
 
     //Set The Camera
     glLoadIdentity();
-    gluLookAt(docInfo.cameraInfo[0][0],docInfo.cameraInfo[0][1],docInfo.cameraInfo[0][2],
-    docInfo.cameraInfo[1][0],docInfo.cameraInfo[1][1],docInfo.cameraInfo[1][2],
-    docInfo.cameraInfo[2][0],docInfo.cameraInfo[2][1],docInfo.cameraInfo[2][2]);
+
+    if(moved_camera == 0){
+        gluLookAt(docInfo.cameraInfo[0][0],docInfo.cameraInfo[0][1],docInfo.cameraInfo[0][2],
+        docInfo.cameraInfo[1][0],docInfo.cameraInfo[1][1],docInfo.cameraInfo[1][2],
+        docInfo.cameraInfo[2][0],docInfo.cameraInfo[2][1],docInfo.cameraInfo[2][2]);
+    }else{
+        orbitalCamera();
+    }
 
     //Drawing instructions here
     for(int i=0 ; i < modelsInfo.size() - 2 ; i+=3){
@@ -161,6 +185,47 @@ void renderScene(void){
     glutPostRedisplay();
     //End of Frame
     glutSwapBuffers();
+}
+
+void processKeys(unsigned char key, int xx, int yy) {
+    //Code to process keys
+	switch (key)
+	{
+	case 'w':
+        moved_camera = 1;
+		if(camera_beta + 0.2 > 1.5)
+			camera_beta = 1.5;
+		else
+			camera_beta += 0.2;
+		break;
+	case 's':
+        moved_camera = 1;
+		if(camera_beta - 0.2 < -1.5)
+			camera_beta = -1.5;
+		else
+			camera_beta -= 0.2;
+		break;
+	case 'a':
+        moved_camera = 1;
+		camera_alpha -= 0.3;
+		break;
+	case 'd':
+        moved_camera = 1;
+		camera_alpha += 0.3;
+		break;
+    case 'q':
+        camera_radius += 0.2f;
+        break;
+    case 'e':
+        camera_radius -= 0.2f;
+        break;
+	case 'm':
+		if(moved_camera == 1)
+			moved_camera = 0;
+	default:
+		break;
+	}
+	glutPostRedisplay();
 }
 
 int main(int argc, char **argv){
@@ -203,6 +268,9 @@ int main(int argc, char **argv){
     //Required callback registry
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);
+
+    //Callback registration for keyboard processing
+	glutKeyboardFunc(processKeys);
 
     //OpenGL Settings
     glEnable(GL_DEPTH_TEST);
