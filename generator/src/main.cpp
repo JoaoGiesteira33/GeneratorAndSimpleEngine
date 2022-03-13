@@ -454,15 +454,9 @@ int gen_plane(char** args){
         for(int j=0; j<divisions; j++){
             
             //BOTTOM
-<<<<<<< HEAD
-            float p1x=(float)i*sub_size+(float)(-len/2);
-            float p1y=0;                                                          
-            float p1z=(float)j*sub_size+(float)(-len/2);
-=======
             float p1x=(float)i*sub_size-(len/2);
             float p1y=0;                                                          
             float p1z=(float)j*sub_size-(len/2);
->>>>>>> 883cd1ba89a8a31ec57c0e6dab454a883184ba1d
 
             float p2x=p1x;
             float p2y=p1y;
