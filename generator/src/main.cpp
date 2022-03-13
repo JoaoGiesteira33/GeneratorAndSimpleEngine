@@ -445,7 +445,7 @@ int gen_cone(char** args){
 int gen_plane(char** args){
     float len = (float)std::atoi(args[2]);
     int divisions = std::atoi(args[3]);
-    float sub_size = len/(float)divisions;
+    float sub_size = (float)len/(float)divisions;
 
     std::ofstream file;
     file.open(args[4]);
@@ -454,9 +454,9 @@ int gen_plane(char** args){
         for(int j=0; j<divisions; j++){
             
             //BOTTOM
-            float p1x=(float)i*sub_size-(float)(len/2);
+            float p1x=(float)i*sub_size+(float)(-len/2);
             float p1y=0;                                                          
-            float p1z=(float)j*sub_size-(float)(len/2);
+            float p1z=(float)j*sub_size+(float)(-len/2);
 
             float p2x=p1x;
             float p2y=p1y;
