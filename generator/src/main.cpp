@@ -25,22 +25,22 @@ void write_point(Point p, std::ofstream& file) {
 }
 
 int gen_sphere(char** args){
-    int radius = std::atoi(args[2]);
+    auto radius = (float) std::atoi(args[2]);
     int slices = std::atoi(args[3]);
     int stacks = std::atoi(args[4]);
 
     std::ofstream file;
     file.open(args[5]);
     float ang_stack = M_PI / stacks;
-	float ang_slice = (2 * M_PI) / slices;
+	float ang_slice = (2 * (float)M_PI) / (float)slices;
 
 	for(int i = 0 ; i < slices ; i++){ //Iterate Slices
-		float alpha = (i * ang_slice);
-		float next_alpha = ((i+1) * ang_slice);
+		float alpha = (float)i * ang_slice;
+		float next_alpha = (float)(i+1) * ang_slice;
 
 		for(int j = 0 ; j < stacks ; j++){ //Iterate Stacks
-			float beta = (j * ang_stack) - (M_PI / 2);
-			float next_beta = ((j+1) * ang_stack) - (M_PI / 2);
+			float beta = (float)j*ang_stack - (float)M_PI/2;
+			float next_beta = (float)(j+1)*ang_stack - (float)M_PI/2;
 
 			//Point 1 Coords
 			float x_1 = radius * cosf(beta) * sinf( alpha );
@@ -75,13 +75,13 @@ int gen_sphere(char** args){
     return 0;
 }
 
-void box_front_back(int size, int grid, float sub_size, std::ofstream& file){
+void box_front_back(float size, int grid, float sub_size, std::ofstream& file){
     //std::cout<<"------FRONT & BACK--------\n";
     for(int i=0; i<grid ; i++){
         for(int j=0; j<grid; j++){
             //BACK
-            float p1x=j*sub_size;
-            float p1y=i*sub_size;                                                    
+            float p1x=(float)j*sub_size;
+            float p1y=(float)i*sub_size;
             float p1z=0;                                          
                                                                                 
             float p2x=p1x;
@@ -148,14 +148,14 @@ void box_front_back(int size, int grid, float sub_size, std::ofstream& file){
         }
     }
 }
-void box_left_right(int size, int grid, float sub_size, std::ofstream& file){
+void box_left_right(float size, int grid, float sub_size, std::ofstream& file){
     //std::cout<<"------LEFT & RIGHT--------\n";
     for(int i=0; i<grid ; i++){
         for(int j=0; j<grid; j++){
             //LEFT
             float p1x=0;
-            float p1y=i*sub_size;                                                        
-            float p1z=j*sub_size;
+            float p1y=(float)i*sub_size;
+            float p1z=(float)j*sub_size;
 
             float p2x=p1x;
             float p2y=p1y;
@@ -221,15 +221,15 @@ void box_left_right(int size, int grid, float sub_size, std::ofstream& file){
         }
     }
 }
-void box_top_bottom(int size, int grid, float sub_size, std::ofstream& file){
+void box_top_bottom(float size, int grid, float sub_size, std::ofstream& file){
     //std::cout<<"------TOP & BOTTOM--------\n";
     for(int i=0; i<grid ; i++){
         for(int j=0; j<grid; j++){
             
             //BOTTOM
-            float p1x=i*sub_size;
+            float p1x=(float)i*sub_size;
             float p1y=0;                                                          
-            float p1z=j*sub_size;                                                 
+            float p1z=(float)j*sub_size;
                                                                                 
             float p2x=p1x+sub_size;
             float p2y=p1y;
@@ -303,9 +303,9 @@ int gen_box(char** args){
     std::ofstream file;
     file.open(args[4]);
     
-    box_left_right(size,grid,sub_size,file);
-    box_top_bottom(size,grid,sub_size,file);
-    box_front_back(size,grid,sub_size,file);
+    box_left_right((float)size,grid,sub_size,file);
+    box_top_bottom((float)size,grid,sub_size,file);
+    box_front_back((float)size,grid,sub_size,file);
 
     file.close();
     return 0;
@@ -370,9 +370,9 @@ int gen_cone(char** args){
 }
 
 int gen_plane(char** args){
-    int len = std::atoi(args[2]);
+    auto len = (float)std::atoi(args[2]);
     int divisions = std::atoi(args[3]);
-    float sub_size = (float)len/(float)divisions;
+    float sub_size = len/(float)divisions;
 
     std::ofstream file;
     file.open(args[4]);
@@ -381,9 +381,9 @@ int gen_plane(char** args){
         for(int j=0; j<divisions; j++){
             
             //BOTTOM
-            float p1x=i*sub_size-(float)(len/2);
+            float p1x=(float)i*sub_size-(float)(len/2);
             float p1y=0;                                                          
-            float p1z=j*sub_size-(float)(len/2);   
+            float p1z=(float)j*sub_size-(float)(len/2);
 
             float p2x=p1x;
             float p2y=p1y;
@@ -428,7 +428,7 @@ int check_args(int n, char **args){
     return 1;
 }
 Point new_point(float x, float y, float z) {
-    Point p = (Point) (malloc(sizeof(struct point)));
+    auto p = (Point) (malloc(sizeof(struct point)));
     p->x = x; p->y = y; p->z = z;
     return p;
 }
@@ -452,6 +452,9 @@ int main(int argc, char **argv) {
 
     else if (figure == "box" && check_args(3, argv+2))
         gen_box(argv);
+
+    else if (figure == "torus" && check_args(4, argv+2))
+        gen_torus(argv);
 
     else {
         std::cout<<"Invalid input"<<std::endl;
