@@ -315,10 +315,8 @@ int gen_box(char** args){
 void generate_cone(float radius, float height, int slices , float stacks, std::ofstream& file){
     float alpha = 2*(float)M_PI / (float)slices;
     float yratio = height/stacks;
-    int iaux, jaux;
 
-
-    for (iaux=0; iaux<slices; iaux++){
+    for (int iaux=0; iaux<slices; iaux++){
         auto i = (float) iaux;
         float s1 = radius*sin(i*alpha);
         float s2 = radius*sin((i+1)*alpha);
@@ -331,7 +329,7 @@ void generate_cone(float radius, float height, int slices , float stacks, std::o
         write_point(0, 0, 0, file);
         file<<std::endl;
 
-        for(jaux=0;(float)jaux<stacks;jaux++){
+        for(int jaux=0;(float)jaux<stacks;jaux++){
             auto j = (float)jaux;
 
             float newR = (-1)*((((j+1)*yratio)-height)*radius)/height;
