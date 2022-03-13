@@ -148,7 +148,6 @@ void box_front_back(int size, int grid, float sub_size, std::ofstream& file){
         }
     }
 }
-
 void box_left_right(int size, int grid, float sub_size, std::ofstream& file){
     //std::cout<<"------LEFT & RIGHT--------\n";
     for(int i=0; i<grid ; i++){
@@ -222,7 +221,6 @@ void box_left_right(int size, int grid, float sub_size, std::ofstream& file){
         }
     }
 }
-
 void box_top_bottom(int size, int grid, float sub_size, std::ofstream& file){
     //std::cout<<"------TOP & BOTTOM--------\n";
     for(int i=0; i<grid ; i++){
@@ -314,13 +312,14 @@ int gen_box(char** args){
 }
 
 
-void generate_cone(float radius, float height, int slices , int stacks, std::ofstream& file){
-    float alpha = 2*M_PI / slices;
-    float yratio = height/(float)stacks;
+void generate_cone(float radius, float height, int slices , float stacks, std::ofstream& file){
+    float alpha = 2*(float)M_PI / (float)slices;
+    float yratio = height/stacks;
     int iaux, jaux;
 
+
     for (iaux=0; iaux<slices; iaux++){
-        float i = (float) iaux;
+        auto i = (float) iaux;
         float s1 = radius*sin(i*alpha);
         float s2 = radius*sin((i+1)*alpha);
         float c1 = radius*cos(i*alpha);
@@ -332,8 +331,8 @@ void generate_cone(float radius, float height, int slices , int stacks, std::ofs
         write_point(0, 0, 0, file);
         file<<std::endl;
 
-        for(jaux=0;jaux<stacks;jaux++){
-            float j = (float)jaux;
+        for(jaux=0;(float)jaux<stacks;jaux++){
+            auto j = (float)jaux;
 
             float newR = (-1)*((((j+1)*yratio)-height)*radius)/height;
             float news1 = newR*sin(i*alpha);
@@ -367,7 +366,7 @@ int gen_cone(char** args){
 
     std::ofstream file;
     file.open(args[6]);
-    generate_cone(radius, height, slices , stacks, file);
+    generate_cone((float)radius, (float)height, slices , (float)stacks, file);
     file.close();
     return 0;
 }
