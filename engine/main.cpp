@@ -168,7 +168,6 @@ void renderScene(void){
 
     //Set The Camera
     glLoadIdentity();
-
     if(moved_camera == 0){
         gluLookAt(docInfo.cameraInfo[0][0],docInfo.cameraInfo[0][1],docInfo.cameraInfo[0][2],
         docInfo.cameraInfo[1][0],docInfo.cameraInfo[1][1],docInfo.cameraInfo[1][2],
@@ -181,8 +180,8 @@ void renderScene(void){
     for(int i=0 ; i < modelsInfo.size() - 2 ; i+=3){
         drawTriangle(*modelsInfo[i],*modelsInfo[i+1],*modelsInfo[i+2]);
     }
-
     glutPostRedisplay();
+
     //End of Frame
     glutSwapBuffers();
 }

@@ -24,6 +24,71 @@ void write_point(Point p, std::ofstream& file) {
          << std::to_string(p->z) << " ";
 }
 
+void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float tubeRadius, std::ofstream& file){
+	float phiAngleStep = (2 * M_PI) / float(mainSegments);
+	float thetaAngleStep = (2 * M_PI) / float(tubeSegments);
+	float currentPhi = 0.0f;
+
+	for(int i = 0 ; i < mainSegments ; i++){
+		float sinPhi = sinf(currentPhi);
+		float cosPhi = cosf(currentPhi);
+		float nextSinPhi = sinf(currentPhi + phiAngleStep);
+		float nextCosPhi = cosf(currentPhi + phiAngleStep);
+		float currentTheta = 0.0f;
+		
+		for(int j = 0 ; j < tubeSegments ; j++){
+			float sinTheta = sinf(currentTheta);
+			float cosTheta = cosf(currentTheta);
+			float nextSinTheta = sinf(currentTheta + thetaAngleStep);
+			float nextCosTheta = cosf(currentTheta + thetaAngleStep);
+
+			//Point 1 Coords
+			float x_1 = (mainRadius + tubeRadius * cosTheta) * cosPhi;
+			float y_1 = (mainRadius + tubeRadius * cosTheta) * sinPhi;
+			float z_1 = tubeRadius * sinTheta;
+			//Point 2 Coords
+			float x_2 = (mainRadius + tubeRadius * nextCosTheta) * nextCosPhi;
+			float y_2 = (mainRadius + tubeRadius * nextCosTheta) * nextSinPhi;
+			float z_2 = tubeRadius * nextSinTheta;
+			//Point 3 Coords
+			float x_3 = (mainRadius + tubeRadius * nextCosTheta) * cosPhi;
+			float y_3 = (mainRadius + tubeRadius * nextCosTheta) * sinPhi;
+			float z_3 = tubeRadius * nextSinTheta;
+			//Point 4 Coords
+			float x_4 = (mainRadius + tubeRadius * cosTheta) * nextCosPhi;
+			float y_4 = (mainRadius + tubeRadius * cosTheta) * nextSinPhi;
+			float z_4 = tubeRadius * sinTheta;
+
+			write_point(x_1,y_1,z_1,file);
+			write_point(x_2,y_2,z_2,file);
+			write_point(x_3,y_3,z_3,file);
+            file<<std::endl;
+
+			write_point(x_1,y_1,z_1,file);
+			write_point(x_4,y_4,z_4,file);
+			write_point(x_2,y_2,z_2,file);
+            file<<std::endl;
+
+			currentTheta += thetaAngleStep;
+		}
+		currentPhi += phiAngleStep;
+	}
+}
+int gen_torus(char** args){
+    int mainSegments = std::atoi(args[2]);
+    int tubeSegments = std::atoi(args[3]);
+    float mainRadius = (float) std::atoi(args[4]);
+    float tubeRadius = (float) std::atoi(args[5]);
+
+    std::ofstream file;
+    file.open(args[6]);
+
+    drawTorusRing(mainSegments,tubeSegments,mainRadius,tubeRadius,file);
+
+    file.close();
+    return 0;
+}
+
 int gen_sphere(char** args){
     auto radius = (float) std::atoi(args[2]);
     int slices = std::atoi(args[3]);
