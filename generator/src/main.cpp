@@ -25,8 +25,8 @@ void write_point(Point p, std::ofstream& file) {
 }
 
 void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float tubeRadius, std::ofstream& file){
-	float phiAngleStep = (2 * M_PI) / float(mainSegments);
-	float thetaAngleStep = (2 * M_PI) / float(tubeSegments);
+	float phiAngleStep = (2 * (float)M_PI) / float(mainSegments);
+	float thetaAngleStep = (2 * (float)M_PI) / float(tubeSegments);
 	float currentPhi = 0.0f;
 
 	for(int i = 0 ; i < mainSegments ; i++){
@@ -90,7 +90,7 @@ int gen_torus(char** args){
 }
 
 int gen_sphere(char** args){
-    auto radius = (float) std::atoi(args[2]);
+    float radius = (float) std::atoi(args[2]);
     int slices = std::atoi(args[3]);
     int stacks = std::atoi(args[4]);
 
@@ -390,7 +390,7 @@ void generate_cone(float radius, float height, int slices , float stacks, std::o
     float yratio = height/stacks;
 
     for (int iaux=0; iaux<slices; iaux++){
-        auto i = (float) iaux;
+        float i = (float) iaux;
         float s1 = radius*sin(i*alpha);
         float s2 = radius*sin((i+1)*alpha);
         float c1 = radius*cos(i*alpha);
@@ -403,7 +403,7 @@ void generate_cone(float radius, float height, int slices , float stacks, std::o
         file<<std::endl;
 
         for(int jaux=0;(float)jaux<stacks;jaux++){
-            auto j = (float)jaux;
+            float j = (float)jaux;
 
             float newR = (-1)*((((j+1)*yratio)-height)*radius)/height;
             float news1 = newR*sin(i*alpha);
@@ -443,7 +443,7 @@ int gen_cone(char** args){
 }
 
 int gen_plane(char** args){
-    auto len = (float)std::atoi(args[2]);
+    float len = (float)std::atoi(args[2]);
     int divisions = std::atoi(args[3]);
     float sub_size = len/(float)divisions;
 
@@ -501,7 +501,7 @@ int check_args(int n, char **args){
     return 1;
 }
 Point new_point(float x, float y, float z) {
-    auto p = (Point) (malloc(sizeof(struct point)));
+    Point p = (Point) (malloc(sizeof(struct point)));
     p->x = x; p->y = y; p->z = z;
     return p;
 }
