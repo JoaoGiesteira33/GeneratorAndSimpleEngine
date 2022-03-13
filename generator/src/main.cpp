@@ -153,9 +153,9 @@ void box_front_back(float size, int grid, float sub_size, std::ofstream& file){
     for(int i=0; i<grid ; i++){
         for(int j=0; j<grid; j++){
             //BACK
-            float p1x=(float)j*sub_size;
-            float p1y=(float)i*sub_size;
-            float p1z=0;                                          
+            float p1x=(float)j*sub_size - (size/2);
+            float p1y=(float)i*sub_size - (size/2);
+            float p1z=0 - (size/2);                                          
                                                                                 
             float p2x=p1x;
             float p2y=p1y+sub_size;
@@ -226,9 +226,9 @@ void box_left_right(float size, int grid, float sub_size, std::ofstream& file){
     for(int i=0; i<grid ; i++){
         for(int j=0; j<grid; j++){
             //LEFT
-            float p1x=0;
-            float p1y=(float)i*sub_size;
-            float p1z=(float)j*sub_size;
+            float p1x= 0 -(size/2);
+            float p1y=(float)i*sub_size - (size/2);
+            float p1z=(float)j*sub_size - (size/2);
 
             float p2x=p1x;
             float p2y=p1y;
@@ -300,9 +300,9 @@ void box_top_bottom(float size, int grid, float sub_size, std::ofstream& file){
         for(int j=0; j<grid; j++){
             
             //BOTTOM
-            float p1x=(float)i*sub_size;
-            float p1y=0;                                                          
-            float p1z=(float)j*sub_size;
+            float p1x=(float)i*sub_size - (size/2);
+            float p1y=0 - (size/2);                                                          
+            float p1z=(float)j*sub_size - (size/2);
                                                                                 
             float p2x=p1x+sub_size;
             float p2y=p1y;
