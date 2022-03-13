@@ -102,28 +102,36 @@ int gen_sphere(char** args){
 	for(int i = 0 ; i < slices ; i++){ //Iterate Slices
 		float alpha = (float)i * ang_slice;
 		float next_alpha = (float)(i+1) * ang_slice;
+    	float cosAlpha = cosf(alpha);
+		float nextCosAlpha = cosf(next_alpha);
+		float sinAlpha = sinf(alpha);
+		float nextSinAlpha = sinf(next_alpha);
 
 		for(int j = 0 ; j < stacks ; j++){ //Iterate Stacks
 			float beta = (float)j*ang_stack - (float)M_PI/2;
 			float next_beta = (float)(j+1)*ang_stack - (float)M_PI/2;
+			float cosBeta = cosf(beta);
+			float nextCosBeta = cosf(next_beta);
+			float sinBeta = sinf(beta);
+			float nextSinBeta = sinf(next_beta);
 
 			//Point 1 Coords
-			float x_1 = radius * cosf(beta) * sinf( alpha );
-			float y_1 = radius * sinf( beta );
-			float z_1 = radius * cosf(beta) * cosf( alpha );
+			float x_1 = radius * cosBeta * sinAlpha;
+			float y_1 = radius * sinBeta;
+			float z_1 = radius * cosBeta * cosAlpha;
 			//Point 2 Coords
-			float x_2 = radius * cosf(next_beta) * sinf( next_alpha );
-			float y_2 = radius * sinf( next_beta );
-			float z_2 = radius * cosf(next_beta) * cosf( next_alpha );
+			float x_2 = radius * nextCosBeta * nextSinAlpha;
+			float y_2 = radius * nextSinBeta;
+			float z_2 = radius * nextCosBeta * nextCosAlpha;
 			//Point 3 Coords
-			float x_3 = radius * cosf(next_beta) * sinf( alpha );
-			float y_3 = radius * sinf( next_beta );
-			float z_3 = radius * cosf(next_beta) * cosf( alpha );
+			float x_3 = radius * nextCosBeta * sinAlpha;
+			float y_3 = radius * nextSinBeta;
+			float z_3 = radius * nextCosBeta * cosAlpha;
 			//Point 4 Coords
-			float x_4 = radius * cosf(beta) * sinf( next_alpha );
-			float y_4 = radius * sinf( beta );
-			float z_4 = radius * cosf(beta) * cosf( next_alpha );
-	
+			float x_4 = radius * cosBeta * nextSinAlpha;
+			float y_4 = radius * sinBeta;
+			float z_4 = radius * cosBeta * nextCosAlpha;
+            
 			write_point(x_1,y_1,z_1,file);
 			write_point(x_2,y_2,z_2,file);
 			write_point(x_3,y_3,z_3,file);
