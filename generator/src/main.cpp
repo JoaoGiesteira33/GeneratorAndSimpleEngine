@@ -335,7 +335,7 @@ void generate_cone(float radius, float height, int slices , int stacks, std::ofs
         for(jaux=0;jaux<stacks;jaux++){
             float j = (float)jaux;
 
-            float newR = -1*((((j+1)*yratio)-height)*radius)/height;
+            float newR = (-1)*((((j+1)*yratio)-height)*radius)/height;
             float news1 = newR*sin(i*alpha);
             float news2 = newR*sin((i+1)*alpha);
             float newc1 = newR*cos(i*alpha);
