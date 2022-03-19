@@ -1,6 +1,7 @@
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
+#include <GL/glew.h>
 #include <GL/glut.h>
 #endif
 
@@ -29,23 +30,22 @@ struct XMLInfo{
     vector<string> models;
 };
 
-struct Point{
-    GLfloat x;
-    GLfloat y;
-    GLfloat z;
-};
-
-vector<Point*> modelsInfo; //Load all model .3d file's info here.
 XMLInfo docInfo;
+vector<GLuint> vertices;
+vector<GLuint> verticeCount;
 
+//Camera Values
 int moved_camera = 0;
 float camera_alpha = 0.0f;
 float camera_beta = 0.0f;
 float camera_radius = 5.0f;
-
 float camera_x = 5.0f;
 float camera_y = 5.0f;
 float camera_z = 5.0f;
+
+//FPS auxiliary Values
+int timebase;
+float frame = 0;
 
 void orbitalCamera(){
 	camera_x = camera_radius * cosf(camera_beta) * sinf(camera_alpha);
@@ -57,17 +57,11 @@ void orbitalCamera(){
 				  0.0f,1.0f,0.0f);
 }
 
-void drawTriangle(Point a, Point b, Point c){
-    glBegin(GL_TRIANGLES);
-	    glVertex3f(a.x,a.y,a.z);
-	    glVertex3f(b.x,b.y,b.z);
-	    glVertex3f(c.x,c.y,c.z);
-    glEnd();
-}
-
-int loadModelInfo(const char* file_name){
+void prepareData(int ind, const char *file_name){
+    vector<float> points;
     string line;
     ifstream myfile(file_name);
+    GLfloat aux;
     
     if (!myfile) {
         cerr << "Unable to open file " << file_name;
@@ -79,19 +73,25 @@ int loadModelInfo(const char* file_name){
       while ( getline(myfile,line) )
       {
         stringstream ss(line);
-        for(int i=0 ; i<3 ; i++)
+        for(int i=0 ; i<9 ; i++)
         {
-            struct Point* p = new Point;
-            ss >> p->x;
-            ss >> p->y;
-            ss >> p->z;
-            modelsInfo.push_back(p);
+            ss >> aux;
+            points.push_back(aux);
         }
       }
       myfile.close();
     }
 
-    return 0;
+    verticeCount.push_back(points.size()/3);
+
+    //Criar o VBO
+    vertices.push_back(ind);
+    glGenBuffers(ind+1,&vertices[ind]);
+    glBindBuffer(GL_ARRAY_BUFFER, vertices[ind]);
+    glBufferData(GL_ARRAY_BUFFER,
+                sizeof(float) * points.size(),
+                points.data(),
+                GL_STATIC_DRAW);
 }
 
 int loadFileInfo(XMLNode * pRoot, XMLInfo &docInfo){
@@ -176,12 +176,23 @@ void renderScene(void){
         orbitalCamera();
     }
 
-    //Drawing instructions here
-    for(int i=0 ; i < modelsInfo.size() - 2 ; i+=3){
-        drawTriangle(*modelsInfo[i],*modelsInfo[i+1],*modelsInfo[i+2]);
+    for(int i = 0 ; i < vertices.size() ; i++){
+        glBindBuffer(GL_ARRAY_BUFFER,vertices[i]);
+        glVertexPointer(3,GL_FLOAT,0,0);
+        glDrawArrays(GL_TRIANGLES,0,verticeCount[i]);
     }
-    glutPostRedisplay();
+    //FPS Calculation
+    frame++;
+    int time = glutGet(GLUT_ELAPSED_TIME);
+    if(time - timebase > 1000){
+        float fps = frame * 1000.0/(time-timebase);
+        timebase = time;
+        frame = 0;
 
+        char buffer[32];
+        sprintf(buffer, "FPS: %f", fps);
+        glutSetWindowTitle(buffer);
+    }
     //End of Frame
     glutSwapBuffers();
 }
@@ -251,12 +262,6 @@ int main(int argc, char **argv){
         return 1;
     }
 
-    for(int i = 0 ; i < docInfo.models.size() ; i++){
-        const char * aux = docInfo.models[i].c_str();
-        cout << "Reading new File: " << aux << endl;
-        loadModelInfo(aux);
-    }
-
     //Init GLUT and the Window
     glutInit(&argc,argv);
     glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
@@ -267,9 +272,22 @@ int main(int argc, char **argv){
     //Required callback registry
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);
+    //glutIdleFunc(renderScene);
 
     //Callback registration for keyboard processing
 	glutKeyboardFunc(processKeys);
+
+    //Init GLEW
+    #ifndef __APPLE__
+        glewInit();
+    #endif
+    glEnableClientState(GL_VERTEX_ARRAY);
+
+    for(int i = 0 ; i < docInfo.models.size() ; i++){
+        const char * aux = docInfo.models[i].c_str();
+        cout << "Reading new File: " << aux << endl;
+        prepareData(i,aux);
+    }
 
     //OpenGL Settings
     glEnable(GL_DEPTH_TEST);
@@ -277,7 +295,7 @@ int main(int argc, char **argv){
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     //Enter GLUT's main cycle
-
+    timebase = glutGet(GLUT_ELAPSED_TIME);
     glutMainLoop();
 
     return 0;
