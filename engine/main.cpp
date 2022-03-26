@@ -9,12 +9,17 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <iterator>
 #include <string>
-#include <math.h>
 #include <cstdlib>
+#include <algorithm>
+#include <set>
 
+#include <math.h>
 #include <stdio.h>
 
+#include "Matrices.h"
+#include "Vectors.h"
 #include "tinyxml2.h"
 
 #ifndef XMLCheckResult
@@ -22,15 +27,29 @@
 #endif
 
 using namespace tinyxml2;
-using namespace std;
+using std::endl;
+using std::cout;
+using std::string;
+using std::ifstream;
+using std::vector;
+using std::stringstream;
+using std::cerr;
+using std::set;
 
 struct XMLInfo{
     float cameraInfo[3][3];
     float fov, near, far;
-    vector<string> models;
+    set<string> models; //Models to be loaded
+};
+
+struct Group{
+    Matrix4 transformationMatrix;
+    vector<int> models_indices;
+    vector<Group*> groups;
 };
 
 XMLInfo docInfo;
+Group* rootGroup;
 vector<GLuint> vertices;
 vector<GLuint> verticeCount;
 
@@ -47,6 +66,19 @@ float camera_z = 5.0f;
 int timebase;
 float frame = 0;
 
+int getIndex(set<string> values, string value)
+{
+    int index = 0;
+
+    for (string s : values) { 
+        if (s.compare(value) == 0)
+            return index;
+        index++;
+    }
+
+    return -1;
+}
+
 void orbitalCamera(){
 	camera_x = camera_radius * cosf(camera_beta) * sinf(camera_alpha);
 	camera_y = camera_radius * sinf(camera_beta);
@@ -57,7 +89,7 @@ void orbitalCamera(){
 				  0.0f,1.0f,0.0f);
 }
 
-void prepareData(int ind, const char *file_name){
+void prepareData(const int ind, const char *file_name){
     vector<float> points;
     string line;
     ifstream myfile(file_name);
@@ -85,16 +117,108 @@ void prepareData(int ind, const char *file_name){
     verticeCount.push_back(points.size()/3);
 
     //Criar o VBO
-    vertices.push_back(ind);
-    glGenBuffers(ind+1,&vertices[ind]);
+    cout << "Indice in here is: " << ind << endl;
+    GLint value = ind + 1;
+    vertices.push_back(value);
+
+    //glGenBuffers(value,&vertices.at(ind));
+    cout << "AUX2: " << value << endl; 
     glBindBuffer(GL_ARRAY_BUFFER, vertices[ind]);
     glBufferData(GL_ARRAY_BUFFER,
                 sizeof(float) * points.size(),
                 points.data(),
                 GL_STATIC_DRAW);
+    cout << "Adding => Vertices: " << vertices[ind] << " | VerticesCount: " << verticeCount[ind] << endl;
 }
 
-int loadFileInfo(XMLNode * pRoot, XMLInfo &docInfo){
+int load_models(Group * group, XMLElement * pList){
+    XMLElement* pListElement = pList->FirstChildElement("model");
+    while (pListElement != nullptr)
+    {
+        // Obter nome do ficheiro
+        const char * aux = nullptr;
+        aux = pListElement->Attribute("file");
+        cout << "Model Name: " << aux << endl;
+        if (aux == nullptr) return XML_ERROR_PARSING_ATTRIBUTE;
+        string newModelFile = aux;
+        // Confirmar se ficheiro já foi inserido
+        int index = getIndex(docInfo.models,newModelFile);
+        if (index != -1){ //Ficheiro já existente
+            cout << "1) Inserting: " << index << endl;
+            (group->models_indices).push_back(index);
+        }else{ //Novo ficheiro
+            cout << "2) Inserting: " << docInfo.models.size() << endl;
+            (group->models_indices).push_back(docInfo.models.size());
+            docInfo.models.insert(newModelFile);
+        }
+        //Continuar a iterar
+        pListElement = pListElement->NextSiblingElement("model");
+    }
+
+    return 0;
+}
+
+Matrix4 load_matrix(XMLElement * transforms){
+    XMLError eResult;
+    Matrix4 res;
+    res.identity();
+    float x,y,z,angle;
+
+    //Load Translate
+    XMLElement * pElement = transforms->FirstChildElement( "translate" );
+    if (pElement != nullptr) {
+        eResult = pElement->QueryFloatAttribute("x",&x);
+        eResult = pElement->QueryFloatAttribute("y",&y);
+        eResult = pElement->QueryFloatAttribute("z",&z);
+        res.translate(x,y,z);
+    }
+
+    //Load Rotate
+    pElement = transforms->FirstChildElement( "rotate" );
+    if (pElement != nullptr) {
+        eResult = pElement->QueryFloatAttribute("angle",&angle);
+        eResult = pElement->QueryFloatAttribute("x",&x);
+        eResult = pElement->QueryFloatAttribute("y",&y);
+        eResult = pElement->QueryFloatAttribute("z",&z);
+        res.rotate(angle,x,y,z);
+    }
+    //Load Scale
+    pElement = transforms->FirstChildElement( "scale" );
+    if (pElement != nullptr) {
+        eResult = pElement->QueryFloatAttribute("x",&x);
+        eResult = pElement->QueryFloatAttribute("y",&y);
+        eResult = pElement->QueryFloatAttribute("z",&z);
+        res.scale(x,y,z);
+    }
+
+    return res;
+}
+
+Group* load_group(XMLElement * pList){
+    Group * retGroup = new Group;
+
+    //Transformations
+    XMLElement * transforms = pList->FirstChildElement("transform");
+    if(transforms != nullptr){
+        retGroup->transformationMatrix = load_matrix(transforms);
+    }
+
+    //Models
+    XMLElement * models = pList->FirstChildElement("models");
+    if(models != nullptr){
+        load_models(retGroup, models);
+    }
+
+    //Groups
+    for(XMLElement * group = pList->FirstChildElement("group") ; group != NULL ; group = group->NextSiblingElement("group")){
+        Group* newGroup = load_group(group);
+        (retGroup->groups).push_back(newGroup);
+    }
+
+    return retGroup;
+}
+
+int loadFileInfo(XMLNode * pRoot){
     XMLError eResult;
     //Load Camera Position Info
     XMLElement * pElement = pRoot->FirstChildElement("camera")->FirstChildElement( "position" );
@@ -129,18 +253,10 @@ int loadFileInfo(XMLNode * pRoot, XMLInfo &docInfo){
     eResult = pElement->QueryFloatAttribute("far",&docInfo.far);
 
     //Load Model Files
-    pElement = pRoot->FirstChildElement("group")->FirstChildElement( "models" );
-    XMLElement * pListElement = pElement->FirstChildElement("model");
-    while (pListElement != nullptr)
-    {
-        const char * aux = nullptr;
-        aux = pListElement->Attribute("file");
-        if (aux == nullptr) return XML_ERROR_PARSING_ATTRIBUTE;
-        string newModelFile = aux;
-        docInfo.models.push_back(newModelFile);
-        //Continuar a iterar
-        pListElement = pListElement->NextSiblingElement("model");
-    }
+    pElement = pRoot->FirstChildElement("group");
+    if (pElement == nullptr) return XML_ERROR_PARSING_ELEMENT;
+    rootGroup = load_group(pElement);
+
     return 0;
 }
 
@@ -162,6 +278,27 @@ void changeSize(int w, int h){
 	glMatrixMode(GL_MODELVIEW);
 }
 
+void renderGroup(Group * g){
+    glPushMatrix();
+
+    //Apply transformation matrix
+    glMultMatrixf((g->transformationMatrix).get());
+
+    for(int i = 0 ; i < (g->models_indices).size() ; i++){
+        int ind = (g->models_indices)[i];
+        cout << "Starting to render indice #" << ind << "\n";
+        glBindBuffer(GL_ARRAY_BUFFER,vertices[ind]);
+        glVertexPointer(3,GL_FLOAT,0,0);
+        glDrawArrays(GL_TRIANGLES,0,verticeCount[ind]);
+    }
+    //Render sub-groups
+    for(int i = 0 ; i < (g->groups).size() ; i++){
+        renderGroup((g->groups)[i]);
+    }
+
+    glPopMatrix();
+}
+
 void renderScene(void){
     //Clear Buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -176,11 +313,9 @@ void renderScene(void){
         orbitalCamera();
     }
 
-    for(int i = 0 ; i < vertices.size() ; i++){
-        glBindBuffer(GL_ARRAY_BUFFER,vertices[i]);
-        glVertexPointer(3,GL_FLOAT,0,0);
-        glDrawArrays(GL_TRIANGLES,0,verticeCount[i]);
-    }
+    //Rendering
+    renderGroup(rootGroup);
+
     //FPS Calculation
     frame++;
     int time = glutGet(GLUT_ELAPSED_TIME);
@@ -256,7 +391,7 @@ int main(int argc, char **argv){
     XMLNode * pRoot = doc.FirstChild();
     if (pRoot == nullptr) return XML_ERROR_FILE_READ_ERROR;
 
-    if( loadFileInfo(pRoot,docInfo) != 0)
+    if( loadFileInfo(pRoot) != 0)
     {
         cout << "Error loading file!" << endl;
         return 1;
@@ -283,10 +418,17 @@ int main(int argc, char **argv){
     #endif
     glEnableClientState(GL_VERTEX_ARRAY);
 
-    for(int i = 0 ; i < docInfo.models.size() ; i++){
-        const char * aux = docInfo.models[i].c_str();
+    set<string>::iterator ptr;
+    int i = 0;
+    for (ptr = docInfo.models.begin(); ptr != docInfo.models.end(); ptr++, i++)
+    {
+        const char * aux = (*ptr).c_str();
         cout << "Reading new File: " << aux << endl;
         prepareData(i,aux);
+    }
+
+    for(int j = 0 ; j < vertices.size() ; j++){
+        cout << "#" << j << " Vertices: " << vertices[j] << " | VertincesCount: " << verticeCount[j] << endl;
     }
 
     //OpenGL Settings
