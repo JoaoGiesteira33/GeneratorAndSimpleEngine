@@ -39,7 +39,7 @@ using std::set;
 struct XMLInfo{
     float cameraInfo[3][3];
     float fov, near, far;
-    set<string> models; //Models to be loaded
+    vector<string> models; //Models to be loaded
 };
 
 struct Group{
@@ -66,7 +66,7 @@ float camera_z = 5.0f;
 int timebase;
 float frame = 0;
 
-int getIndex(set<string> values, string value)
+int getIndex(vector<string> values, string value)
 {
     int index = 0;
 
@@ -138,18 +138,17 @@ int load_models(Group * group, XMLElement * pList){
         // Obter nome do ficheiro
         const char * aux = nullptr;
         aux = pListElement->Attribute("file");
-        cout << "Model Name: " << aux << endl;
         if (aux == nullptr) return XML_ERROR_PARSING_ATTRIBUTE;
         string newModelFile = aux;
         // Confirmar se ficheiro já foi inserido
         int index = getIndex(docInfo.models,newModelFile);
         if (index != -1){ //Ficheiro já existente
-            cout << "1) Inserting: " << index << endl;
+            cout << "Already Exists " << newModelFile << " in : " << index << endl;
             (group->models_indices).push_back(index);
         }else{ //Novo ficheiro
-            cout << "2) Inserting: " << docInfo.models.size() << endl;
+            cout << "New Model: " << newModelFile << " in : " << docInfo.models.size() << endl;
             (group->models_indices).push_back(docInfo.models.size());
-            docInfo.models.insert(newModelFile);
+            docInfo.models.push_back(newModelFile);
         }
         //Continuar a iterar
         pListElement = pListElement->NextSiblingElement("model");
@@ -161,7 +160,7 @@ int load_models(Group * group, XMLElement * pList){
 Matrix4 load_matrix(XMLElement * transforms){
     XMLError eResult;
     Matrix4 res;
-    res.identity();
+    //res.identity();
     float x,y,z,angle;
 
     //Load Translate
@@ -201,7 +200,11 @@ Group* load_group(XMLElement * pList){
     XMLElement * transforms = pList->FirstChildElement("transform");
     if(transforms != nullptr){
         retGroup->transformationMatrix = load_matrix(transforms);
-    }
+    }else{
+        Matrix4 id;
+        id.identity();
+        retGroup->transformationMatrix = id;
+    } 
 
     //Models
     XMLElement * models = pList->FirstChildElement("models");
@@ -210,9 +213,12 @@ Group* load_group(XMLElement * pList){
     }
 
     //Groups
-    for(XMLElement * group = pList->FirstChildElement("group") ; group != NULL ; group = group->NextSiblingElement("group")){
-        Group* newGroup = load_group(group);
-        (retGroup->groups).push_back(newGroup);
+    XMLElement * group = pList->FirstChildElement("group");
+    if( group != nullptr){
+        for(; group != nullptr ; group = group->NextSiblingElement("group")){
+            Group* newGroup = load_group(group);
+            (retGroup->groups).push_back(newGroup);
+        }
     }
 
     return retGroup;
@@ -252,7 +258,7 @@ int loadFileInfo(XMLNode * pRoot){
     eResult = pElement->QueryFloatAttribute("near",&docInfo.near);
     eResult = pElement->QueryFloatAttribute("far",&docInfo.far);
 
-    //Load Model Files
+    //Load Groups
     pElement = pRoot->FirstChildElement("group");
     if (pElement == nullptr) return XML_ERROR_PARSING_ELEMENT;
     rootGroup = load_group(pElement);
@@ -279,11 +285,12 @@ void changeSize(int w, int h){
 }
 
 void renderGroup(Group * g){
+    //Save current matrix
     glPushMatrix();
-
+    
     //Apply transformation matrix
     glMultMatrixf((g->transformationMatrix).get());
-
+    //Render models
     for(int i = 0 ; i < (g->models_indices).size() ; i++){
         int ind = (g->models_indices)[i];
         cout << "Starting to render indice #" << ind << "\n";
@@ -418,17 +425,11 @@ int main(int argc, char **argv){
     #endif
     glEnableClientState(GL_VERTEX_ARRAY);
 
-    set<string>::iterator ptr;
-    int i = 0;
-    for (ptr = docInfo.models.begin(); ptr != docInfo.models.end(); ptr++, i++)
+    //Load 3d files to vertices arrays
+    for (int i = 0 ; i < docInfo.models.size() ; i++)
     {
-        const char * aux = (*ptr).c_str();
-        cout << "Reading new File: " << aux << endl;
+        const char * aux = docInfo.models[i].c_str();
         prepareData(i,aux);
-    }
-
-    for(int j = 0 ; j < vertices.size() ; j++){
-        cout << "#" << j << " Vertices: " << vertices[j] << " | VertincesCount: " << verticeCount[j] << endl;
     }
 
     //OpenGL Settings
