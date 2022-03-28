@@ -13,7 +13,6 @@
 #include <string>
 #include <cstdlib>
 #include <algorithm>
-#include <set>
 
 #include <math.h>
 #include <stdio.h>
@@ -34,7 +33,6 @@ using std::ifstream;
 using std::vector;
 using std::stringstream;
 using std::cerr;
-using std::set;
 
 struct XMLInfo{
     float cameraInfo[3][3];
@@ -43,7 +41,7 @@ struct XMLInfo{
 };
 
 struct Group{
-    Matrix4 transformationMatrix;
+    vector<Matrix4> transformationMatrix;
     vector<int> models_indices;
     vector<Group*> groups;
 };
@@ -157,10 +155,9 @@ int load_models(Group * group, XMLElement * pList){
     return 0;
 }
 
-Matrix4 load_matrix(XMLElement * transforms){
+vector<Matrix4> load_matrix(XMLElement * transforms){
     XMLError eResult;
-    Matrix4 res;
-    //res.identity();
+    vector<Matrix4> ret;
     float x,y,z,angle;
 
     //Load Translate
@@ -169,7 +166,9 @@ Matrix4 load_matrix(XMLElement * transforms){
         eResult = pElement->QueryFloatAttribute("x",&x);
         eResult = pElement->QueryFloatAttribute("y",&y);
         eResult = pElement->QueryFloatAttribute("z",&z);
+        Matrix4 res;
         res.translate(x,y,z);
+        ret.push_back(res);
     }
 
     //Load Rotate
@@ -179,7 +178,9 @@ Matrix4 load_matrix(XMLElement * transforms){
         eResult = pElement->QueryFloatAttribute("x",&x);
         eResult = pElement->QueryFloatAttribute("y",&y);
         eResult = pElement->QueryFloatAttribute("z",&z);
+        Matrix4 res;
         res.rotate(angle,x,y,z);
+        ret.push_back(res);
     }
     //Load Scale
     pElement = transforms->FirstChildElement( "scale" );
@@ -187,10 +188,12 @@ Matrix4 load_matrix(XMLElement * transforms){
         eResult = pElement->QueryFloatAttribute("x",&x);
         eResult = pElement->QueryFloatAttribute("y",&y);
         eResult = pElement->QueryFloatAttribute("z",&z);
+        Matrix4 res;
         res.scale(x,y,z);
+        ret.push_back(res);
     }
 
-    return res;
+    return ret;
 }
 
 Group* load_group(XMLElement * pList){
@@ -200,11 +203,7 @@ Group* load_group(XMLElement * pList){
     XMLElement * transforms = pList->FirstChildElement("transform");
     if(transforms != nullptr){
         retGroup->transformationMatrix = load_matrix(transforms);
-    }else{
-        Matrix4 id;
-        id.identity();
-        retGroup->transformationMatrix = id;
-    } 
+    }
 
     //Models
     XMLElement * models = pList->FirstChildElement("models");
@@ -288,8 +287,12 @@ void renderGroup(Group * g){
     //Save current matrix
     glPushMatrix();
     
-    //Apply transformation matrix
-    glMultMatrixf((g->transformationMatrix).get());
+    for(int i = 0 ; i < (g->transformationMatrix).size() ; i++){
+        cout << "Transformation number: " << i << endl;
+        cout << "Content: " << g->transformationMatrix[i] << endl;
+        glMultMatrixf((g->transformationMatrix)[i].get());
+    }
+
     //Render models
     for(int i = 0 ; i < (g->models_indices).size() ; i++){
         int ind = (g->models_indices)[i];
