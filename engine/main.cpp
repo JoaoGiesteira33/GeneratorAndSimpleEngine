@@ -131,6 +131,7 @@ void prepareData(const int ind, const char *file_name){
 
 int load_models(Group * group, XMLElement * pList){
     XMLElement* pListElement = pList->FirstChildElement("model");
+
     while (pListElement != nullptr)
     {
         // Obter nome do ficheiro
@@ -138,8 +139,10 @@ int load_models(Group * group, XMLElement * pList){
         aux = pListElement->Attribute("file");
         if (aux == nullptr) return XML_ERROR_PARSING_ATTRIBUTE;
         string newModelFile = aux;
+
         // Confirmar se ficheiro já foi inserido
         int index = getIndex(docInfo.models,newModelFile);
+
         if (index != -1){ //Ficheiro já existente
             cout << "Already Exists " << newModelFile << " in : " << index << endl;
             (group->models_indices).push_back(index);
@@ -148,6 +151,7 @@ int load_models(Group * group, XMLElement * pList){
             (group->models_indices).push_back(docInfo.models.size());
             docInfo.models.push_back(newModelFile);
         }
+
         //Continuar a iterar
         pListElement = pListElement->NextSiblingElement("model");
     }
@@ -156,10 +160,42 @@ int load_models(Group * group, XMLElement * pList){
 }
 
 vector<Matrix4> load_matrix(XMLElement * transforms){
-    XMLError eResult;
     vector<Matrix4> ret;
+    XMLError eResult;
     float x,y,z,angle;
 
+    XMLElement * pElement = transforms->FirstChildElement();
+    while(pElement != nullptr){
+        if(strcmp(pElement->Value(),"translate") == 0){
+            cout << "New translate" << endl;
+            eResult = pElement->QueryFloatAttribute("x",&x);
+            eResult = pElement->QueryFloatAttribute("y",&y);
+            eResult = pElement->QueryFloatAttribute("z",&z);
+            Matrix4 res;
+            res.translate(x,y,z);
+            ret.push_back(res);
+        }else if(strcmp(pElement->Value(),"rotate") == 0){
+            cout << "New Rotate" << endl;
+            eResult = pElement->QueryFloatAttribute("angle",&angle);
+            eResult = pElement->QueryFloatAttribute("x",&x);
+            eResult = pElement->QueryFloatAttribute("y",&y);
+            eResult = pElement->QueryFloatAttribute("z",&z);
+            Matrix4 res;
+            res.rotate(angle,x,y,z);
+            ret.push_back(res);
+        }else if(strcmp(pElement->Value(),"scale") == 0){
+            cout << "New Scale" << endl;
+            eResult = pElement->QueryFloatAttribute("x",&x);
+            eResult = pElement->QueryFloatAttribute("y",&y);
+            eResult = pElement->QueryFloatAttribute("z",&z);
+            Matrix4 res;
+            res.scale(x,y,z);
+            ret.push_back(res);
+        }
+        
+        pElement = pElement->NextSiblingElement();
+    }
+/*
     //Load Translate
     XMLElement * pElement = transforms->FirstChildElement( "translate" );
     if (pElement != nullptr) {
@@ -170,7 +206,6 @@ vector<Matrix4> load_matrix(XMLElement * transforms){
         res.translate(x,y,z);
         ret.push_back(res);
     }
-
     //Load Rotate
     pElement = transforms->FirstChildElement( "rotate" );
     if (pElement != nullptr) {
@@ -192,7 +227,7 @@ vector<Matrix4> load_matrix(XMLElement * transforms){
         res.scale(x,y,z);
         ret.push_back(res);
     }
-
+*/
     return ret;
 }
 
