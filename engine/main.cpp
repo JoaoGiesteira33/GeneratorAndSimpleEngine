@@ -64,6 +64,7 @@ float camera_z = 5.0f;
 int timebase;
 float frame = 0;
 
+//Obtem indíce de uma string dentro de um vetor
 int getIndex(vector<string> values, string value)
 {
     int index = 0;
@@ -87,6 +88,7 @@ void orbitalCamera(){
 				  0.0f,1.0f,0.0f);
 }
 
+//Carrega informação sobre vértices num ficheiro para o programa
 void prepareData(const int ind, const char *file_name){
     vector<float> points;
     string line;
@@ -120,7 +122,7 @@ void prepareData(const int ind, const char *file_name){
     vertices.push_back(value);
 
     //glGenBuffers(value,&vertices.at(ind));
-    cout << "AUX2: " << value << endl; 
+    cout << "Value: " << value << endl; 
     glBindBuffer(GL_ARRAY_BUFFER, vertices[ind]);
     glBufferData(GL_ARRAY_BUFFER,
                 sizeof(float) * points.size(),
@@ -167,7 +169,6 @@ vector<Matrix4> load_matrix(XMLElement * transforms){
     XMLElement * pElement = transforms->FirstChildElement();
     while(pElement != nullptr){
         if(strcmp(pElement->Value(),"translate") == 0){
-            cout << "New translate" << endl;
             eResult = pElement->QueryFloatAttribute("x",&x);
             eResult = pElement->QueryFloatAttribute("y",&y);
             eResult = pElement->QueryFloatAttribute("z",&z);
@@ -175,7 +176,6 @@ vector<Matrix4> load_matrix(XMLElement * transforms){
             res.translate(x,y,z);
             ret.push_back(res);
         }else if(strcmp(pElement->Value(),"rotate") == 0){
-            cout << "New Rotate" << endl;
             eResult = pElement->QueryFloatAttribute("angle",&angle);
             eResult = pElement->QueryFloatAttribute("x",&x);
             eResult = pElement->QueryFloatAttribute("y",&y);
@@ -184,7 +184,6 @@ vector<Matrix4> load_matrix(XMLElement * transforms){
             res.rotate(angle,x,y,z);
             ret.push_back(res);
         }else if(strcmp(pElement->Value(),"scale") == 0){
-            cout << "New Scale" << endl;
             eResult = pElement->QueryFloatAttribute("x",&x);
             eResult = pElement->QueryFloatAttribute("y",&y);
             eResult = pElement->QueryFloatAttribute("z",&z);
@@ -192,42 +191,9 @@ vector<Matrix4> load_matrix(XMLElement * transforms){
             res.scale(x,y,z);
             ret.push_back(res);
         }
-        
         pElement = pElement->NextSiblingElement();
     }
-/*
-    //Load Translate
-    XMLElement * pElement = transforms->FirstChildElement( "translate" );
-    if (pElement != nullptr) {
-        eResult = pElement->QueryFloatAttribute("x",&x);
-        eResult = pElement->QueryFloatAttribute("y",&y);
-        eResult = pElement->QueryFloatAttribute("z",&z);
-        Matrix4 res;
-        res.translate(x,y,z);
-        ret.push_back(res);
-    }
-    //Load Rotate
-    pElement = transforms->FirstChildElement( "rotate" );
-    if (pElement != nullptr) {
-        eResult = pElement->QueryFloatAttribute("angle",&angle);
-        eResult = pElement->QueryFloatAttribute("x",&x);
-        eResult = pElement->QueryFloatAttribute("y",&y);
-        eResult = pElement->QueryFloatAttribute("z",&z);
-        Matrix4 res;
-        res.rotate(angle,x,y,z);
-        ret.push_back(res);
-    }
-    //Load Scale
-    pElement = transforms->FirstChildElement( "scale" );
-    if (pElement != nullptr) {
-        eResult = pElement->QueryFloatAttribute("x",&x);
-        eResult = pElement->QueryFloatAttribute("y",&y);
-        eResult = pElement->QueryFloatAttribute("z",&z);
-        Matrix4 res;
-        res.scale(x,y,z);
-        ret.push_back(res);
-    }
-*/
+
     return ret;
 }
 
@@ -323,24 +289,23 @@ void renderGroup(Group * g){
     glPushMatrix();
     
     for(int i = 0 ; i < (g->transformationMatrix).size() ; i++){
-        cout << "Transformation number: " << i << endl;
-        cout << "Content: " << g->transformationMatrix[i] << endl;
         glMultMatrixf((g->transformationMatrix)[i].get());
     }
 
     //Render models
     for(int i = 0 ; i < (g->models_indices).size() ; i++){
         int ind = (g->models_indices)[i];
-        cout << "Starting to render indice #" << ind << "\n";
         glBindBuffer(GL_ARRAY_BUFFER,vertices[ind]);
         glVertexPointer(3,GL_FLOAT,0,0);
         glDrawArrays(GL_TRIANGLES,0,verticeCount[ind]);
     }
+
     //Render sub-groups
     for(int i = 0 ; i < (g->groups).size() ; i++){
         renderGroup((g->groups)[i]);
     }
 
+    //Obtain matrix before transformations from this group
     glPopMatrix();
 }
 
