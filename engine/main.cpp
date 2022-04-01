@@ -128,7 +128,7 @@ void prepareData(const int ind, const char *file_name){
                 sizeof(float) * points.size(),
                 points.data(),
                 GL_STATIC_DRAW);
-    cout << "Adding => Vertices: " << vertices[ind] << " | VerticesCount: " << verticeCount[ind] << endl;
+    cout << "Added => Vertices: " << vertices[ind] << " | VerticesCount: " << verticeCount[ind] << endl;
 }
 
 int load_models(Group * group, XMLElement * pList){
@@ -369,10 +369,10 @@ void processKeys(unsigned char key, int xx, int yy) {
 		camera_alpha += 0.3;
 		break;
     case 'q':
-        camera_radius += 0.2f;
+        camera_radius += 5.0f;
         break;
     case 'e':
-        camera_radius -= 0.2f;
+        camera_radius -= 5.0f;
         break;
 	case 'm':
 		if(moved_camera == 1)
