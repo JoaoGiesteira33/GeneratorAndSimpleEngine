@@ -96,7 +96,22 @@ void orbitalCamera(){
 	camera_x = camera_radius * cosf(camera_beta) * sinf(camera_alpha);
 	camera_y = camera_radius * sinf(camera_beta);
 	camera_z = camera_radius * cosf(camera_beta) * cosf(camera_alpha);
+
+    gluLookAt(camera_x, camera_y, camera_z,
+                  0.0f,0.0f,0.0f,
+                  0.0f,1.0f,0.0f);
 }
+
+ void fpsCamera(){
+     camera_dx = cosf(camera_beta) * sinf(camera_alpha);
+     camera_dy = sinf(camera_beta);
+     camera_dz = cosf(camera_beta) * cosf(camera_alpha);
+ 
+     gluLookAt(camera_x, camera_y, camera_z,
+                   camera_x - camera_dx,camera_y - camera_dy, camera_z - camera_dz,
+                   0.0f,1.0f,0.0f);
+ }
+
 
 //Carrega informação sobre vértices num ficheiro para o programa
 void prepareData(const int ind, const char *file_name){
@@ -330,9 +345,6 @@ void renderScene(void){
         docInfo.cameraInfo[2][0],docInfo.cameraInfo[2][1],docInfo.cameraInfo[2][2]);
     }else{
         orbitalCamera();
-        gluLookAt(camera_x, camera_y, camera_z,
-                  0.0f,0.0f,0.0f,
-                  0.0f,1.0f,0.0f);
     }
 
     //Rendering
