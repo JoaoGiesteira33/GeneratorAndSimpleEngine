@@ -51,22 +51,36 @@ Group* rootGroup;
 vector<GLuint> vertices;
 vector<GLuint> verticeCount;
 
+
+
 //Camera Values
 int moved_camera = 0;
+
 float camera_alpha = 0.0f;
 float camera_beta = 0.0f;
 float camera_radius = 5.0f;
+
 float camera_x = 5.0f;
 float camera_y = 5.0f;
 float camera_z = 5.0f;
+
+float camera_dx = 0.0f;
+float camera_dy = 0.0f;
+float camera_dz = 0.0f;
+
 
 //FPS auxiliary Values
 int timebase;
 float frame = 0;
 
+//Mouse values
+GLfloat mousePosX, mousePosY;
+
+
+
+
 //Obtem indíce de uma string dentro de um vetor
-int getIndex(vector<string> values, string value)
-{
+int getIndex(vector<string> values, string value){
     int index = 0;
 
     for (string s : values) { 
@@ -82,10 +96,6 @@ void orbitalCamera(){
 	camera_x = camera_radius * cosf(camera_beta) * sinf(camera_alpha);
 	camera_y = camera_radius * sinf(camera_beta);
 	camera_z = camera_radius * cosf(camera_beta) * cosf(camera_alpha);
-
-	gluLookAt(camera_x, camera_y, camera_z,
-			      0.0f,0.0f,0.0f,
-				  0.0f,1.0f,0.0f);
 }
 
 //Carrega informação sobre vértices num ficheiro para o programa
@@ -100,8 +110,7 @@ void prepareData(const int ind, const char *file_name){
         exit(1);
     }
 
-    if (myfile.is_open())
-    {
+    if (myfile.is_open()){
       while ( getline(myfile,line) )
       {
         stringstream ss(line);
@@ -321,6 +330,9 @@ void renderScene(void){
         docInfo.cameraInfo[2][0],docInfo.cameraInfo[2][1],docInfo.cameraInfo[2][2]);
     }else{
         orbitalCamera();
+        gluLookAt(camera_x, camera_y, camera_z,
+                  0.0f,0.0f,0.0f,
+                  0.0f,1.0f,0.0f);
     }
 
     //Rendering
@@ -342,46 +354,116 @@ void renderScene(void){
     glutSwapBuffers();
 }
 
+
+void walkFront(){
+    camera_x -= 0.2f * camera_dx;
+    camera_y -= 0.2f * camera_dy;
+    camera_z -= 0.2f * camera_dz;
+
+    gluLookAt(camera_x, camera_y, camera_z,
+              camera_x - camera_dx,camera_y - camera_dy, camera_z - camera_dz,
+              0.0f,1.0f,0.0f);
+}
+
+void walkBack(){
+    camera_x += 0.2f * camera_dx;
+    camera_y += 0.2f * camera_dy;
+    camera_z += 0.2f * camera_dz;
+
+    gluLookAt(camera_x, camera_y, camera_z,
+              camera_x - camera_dx,camera_y - camera_dy, camera_z - camera_dz,
+              0.0f,1.0f,0.0f);
+}
+
+void walkRight(){
+    float aux_camera_dx = cosf(camera_beta) * sinf(camera_alpha+M_PI/2);
+    float aux_camera_dz = cosf(camera_beta) * cosf(camera_alpha+M_PI/2);
+
+    camera_x += 0.2f * aux_camera_dx;
+    camera_z += 0.2f * aux_camera_dz;
+
+    gluLookAt(camera_x, camera_y, camera_z,
+              camera_x - camera_dx,camera_y - camera_dy, camera_z - camera_dz,
+              0.0f,1.0f,0.0f);
+}
+
+void walkLeft(){
+    float aux_camera_dx = cosf(camera_beta) * sinf(camera_alpha+M_PI/2);
+    float aux_camera_dz = cosf(camera_beta) * cosf(camera_alpha+M_PI/2);
+
+    camera_x -= 0.2f * aux_camera_dx;
+    camera_z -= 0.2f * aux_camera_dz;
+
+    gluLookAt(camera_x, camera_y, camera_z,
+              camera_x - camera_dx,camera_y - camera_dy, camera_z - camera_dz,
+              0.0f,1.0f,0.0f);
+}
+
 void processKeys(unsigned char key, int xx, int yy) {
     //Code to process keys
-	switch (key)
-	{
-	case 'w':
-        moved_camera = 1;
-		if(camera_beta + 0.2 > 1.5)
-			camera_beta = 1.5;
-		else
-			camera_beta += 0.2;
-		break;
-	case 's':
-        moved_camera = 1;
-		if(camera_beta - 0.2 < -1.5)
-			camera_beta = -1.5;
-		else
-			camera_beta -= 0.2;
-		break;
-	case 'a':
-        moved_camera = 1;
-		camera_alpha -= 0.3;
-		break;
-	case 'd':
-        moved_camera = 1;
-		camera_alpha += 0.3;
-		break;
-    case 'q':
-        camera_radius += 5.0f;
-        break;
-    case 'e':
-        camera_radius -= 5.0f;
-        break;
-	case 'm':
-		if(moved_camera == 1)
-			moved_camera = 0;
-	default:
-		break;
+	switch (key){
+        case 'w':
+            moved_camera = 1;
+            walkFront();
+            break;
+        case 's':
+            moved_camera = 1;
+            walkBack();
+            break;
+        case 'a':
+            moved_camera = 1;
+            walkLeft();
+            break;
+        case 'd':
+            moved_camera = 1;
+            walkRight();
+            break;
+        case 'm':
+            if(moved_camera == 1)
+                moved_camera = 0;
+            break;
+        default:
+            break;
 	}
 	glutPostRedisplay();
 }
+
+
+void processMouseClick(int button, int state, int x, int y){
+    moved_camera = 1;
+    switch (button) {
+        case(GLUT_LEFT_BUTTON):
+            mousePosX=(float)x;
+            mousePosY=(float)y;
+            break;
+        case (3):
+            camera_radius += 1.5f;
+            break;
+        case(4):
+            camera_radius -= 1.5f;
+            if (camera_radius < 1.0f)
+                camera_radius = 1.0f;
+            break;
+        default:
+            break;
+    }
+    glutPostRedisplay();
+}
+
+void processMouseMotion(int x, int y){
+    float deltaX = (float)x-mousePosX;
+    float deltaY = (float)y-mousePosY;
+    mousePosX=(float)x;
+    mousePosY=(float)y;
+    camera_alpha -= deltaX/400;
+    camera_beta += deltaY/400;
+    if (camera_beta > 1.5f)
+        camera_beta = 1.5f;
+    if (camera_beta < -1.5f)
+        camera_beta = -1.5f;
+    glutPostRedisplay();
+}
+
 
 int main(int argc, char **argv){
     if(!argv[1] || !*argv[1]) {
@@ -421,6 +503,8 @@ int main(int argc, char **argv){
 
     //Callback registration for keyboard processing
 	glutKeyboardFunc(processKeys);
+    glutMouseFunc(processMouseClick);
+    glutMotionFunc(processMouseMotion);
 
     //Init GLEW
     #ifndef __APPLE__
