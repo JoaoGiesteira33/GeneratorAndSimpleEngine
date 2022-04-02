@@ -54,15 +54,15 @@ vector<GLuint> verticeCount;
 
 
 //Camera Values
-int moved_camera = 0;
+int camera_mode = 0;
 
 float camera_alpha = 0.0f;
 float camera_beta = 0.0f;
-float camera_radius = 5.0f;
+float camera_radius = 70.0f;
 
-float camera_x = 5.0f;
-float camera_y = 5.0f;
-float camera_z = 5.0f;
+float camera_x;
+float camera_y;
+float camera_z;
 
 float camera_dx = 0.0f;
 float camera_dy = 0.0f;
@@ -75,6 +75,7 @@ float frame = 0;
 
 //Mouse values
 GLfloat mousePosX, mousePosY;
+int tracking = 0;
 
 
 
@@ -98,8 +99,8 @@ void orbitalCamera(){
 	camera_z = camera_radius * cosf(camera_beta) * cosf(camera_alpha);
 
     gluLookAt(camera_x, camera_y, camera_z,
-                  0.0f,0.0f,0.0f,
-                  0.0f,1.0f,0.0f);
+              0.0f, 0.0f, 0.0f,
+              0.0f,1.0f,0.0f);
 }
 
  void fpsCamera(){
@@ -287,6 +288,10 @@ int loadFileInfo(XMLNode * pRoot){
     if (pElement == nullptr) return XML_ERROR_PARSING_ELEMENT;
     rootGroup = load_group(pElement);
 
+    camera_x = docInfo.cameraInfo[0][0];
+    camera_y = docInfo.cameraInfo[0][1];
+    camera_z = docInfo.cameraInfo[0][2];
+
     return 0;
 }
 
@@ -339,12 +344,15 @@ void renderScene(void){
 
     //Set The Camera
     glLoadIdentity();
-    if(moved_camera == 0){
+    if(camera_mode == 1){
+        orbitalCamera();
+    }if(camera_mode == 2){
+        fpsCamera();
+    }
+    else{
         gluLookAt(docInfo.cameraInfo[0][0],docInfo.cameraInfo[0][1],docInfo.cameraInfo[0][2],
         docInfo.cameraInfo[1][0],docInfo.cameraInfo[1][1],docInfo.cameraInfo[1][2],
         docInfo.cameraInfo[2][0],docInfo.cameraInfo[2][1],docInfo.cameraInfo[2][2]);
-    }else{
-        orbitalCamera();
     }
 
     //Rendering
@@ -368,71 +376,84 @@ void renderScene(void){
 
 
 void walkFront(){
-    camera_x -= 0.2f * camera_dx;
-    camera_y -= 0.2f * camera_dy;
-    camera_z -= 0.2f * camera_dz;
-
-    gluLookAt(camera_x, camera_y, camera_z,
-              camera_x - camera_dx,camera_y - camera_dy, camera_z - camera_dz,
-              0.0f,1.0f,0.0f);
+    camera_x -= 7.77f * camera_dx;
+    camera_y -= 7.77f * camera_dy;
+    camera_z -= 7.77f * camera_dz;
 }
 
 void walkBack(){
-    camera_x += 0.2f * camera_dx;
-    camera_y += 0.2f * camera_dy;
-    camera_z += 0.2f * camera_dz;
-
-    gluLookAt(camera_x, camera_y, camera_z,
-              camera_x - camera_dx,camera_y - camera_dy, camera_z - camera_dz,
-              0.0f,1.0f,0.0f);
+    camera_x += 7.77f * camera_dx;
+    camera_y += 7.77f * camera_dy;
+    camera_z += 7.77f * camera_dz;
 }
 
 void walkRight(){
     float aux_camera_dx = cosf(camera_beta) * sinf(camera_alpha+M_PI/2);
     float aux_camera_dz = cosf(camera_beta) * cosf(camera_alpha+M_PI/2);
 
-    camera_x += 0.2f * aux_camera_dx;
-    camera_z += 0.2f * aux_camera_dz;
-
-    gluLookAt(camera_x, camera_y, camera_z,
-              camera_x - camera_dx,camera_y - camera_dy, camera_z - camera_dz,
-              0.0f,1.0f,0.0f);
+    camera_x += 7.77f * aux_camera_dx;
+    camera_z += 7.77f * aux_camera_dz;
 }
 
 void walkLeft(){
     float aux_camera_dx = cosf(camera_beta) * sinf(camera_alpha+M_PI/2);
     float aux_camera_dz = cosf(camera_beta) * cosf(camera_alpha+M_PI/2);
 
-    camera_x -= 0.2f * aux_camera_dx;
-    camera_z -= 0.2f * aux_camera_dz;
-
-    gluLookAt(camera_x, camera_y, camera_z,
-              camera_x - camera_dx,camera_y - camera_dy, camera_z - camera_dz,
-              0.0f,1.0f,0.0f);
+    camera_x -= 7.77f * aux_camera_dx;
+    camera_z -= 7.77f * aux_camera_dz;
 }
 
 void processKeys(unsigned char key, int xx, int yy) {
     //Code to process keys
 	switch (key){
         case 'w':
-            moved_camera = 1;
-            walkFront();
+            if(camera_mode==0) camera_mode = 2;
+            if(camera_mode==2)
+                walkFront();
             break;
         case 's':
-            moved_camera = 1;
-            walkBack();
+            if(camera_mode==0) camera_mode = 2;
+            if(camera_mode==2)
+                walkBack();
             break;
         case 'a':
-            moved_camera = 1;
-            walkLeft();
+            if(camera_mode==0) camera_mode = 2;
+            if(camera_mode==2)
+                walkLeft();
             break;
         case 'd':
-            moved_camera = 1;
-            walkRight();
+            if(camera_mode==0) camera_mode = 2;
+            if(camera_mode==2)
+                walkRight();
+            break;
+        case 'i': //reset inicial values
+            camera_mode = 0;
+
+            camera_alpha = 0.0f;
+            camera_beta = 0.0f;
+            camera_radius = 7.77f;
+
+            camera_x = docInfo.cameraInfo[0][0];
+            camera_y = docInfo.cameraInfo[0][1];
+            camera_z = docInfo.cameraInfo[0][2];
+
+            camera_dx = 0.0f;
+            camera_dy = 0.0f;
+            camera_dz = 0.0f;
+
             break;
         case 'm':
-            if(moved_camera == 1)
-                moved_camera = 0;
+            if(camera_mode==2 || camera_mode==0) {
+                camera_mode = 1;
+                camera_x = docInfo.cameraInfo[0][0];
+                camera_y = docInfo.cameraInfo[0][1];
+                camera_z = docInfo.cameraInfo[0][2];
+                camera_alpha = 0.0f;
+                camera_beta = 0.0f;
+            }
+            else
+                camera_radius = 1.0f;
+                camera_mode = 2;
             break;
         default:
             break;
@@ -442,19 +463,27 @@ void processKeys(unsigned char key, int xx, int yy) {
 
 
 void processMouseClick(int button, int state, int x, int y){
-    moved_camera = 1;
+    if(camera_mode==0) camera_mode = 1;
     switch (button) {
         case(GLUT_LEFT_BUTTON):
-            mousePosX=(float)x;
-            mousePosY=(float)y;
-            break;
-        case (3):
-            camera_radius += 1.5f;
+            if(state==GLUT_DOWN){
+                tracking = 1;
+                mousePosX=(float)x;
+                mousePosY=(float)y;
+            }else
+                tracking = 0;
+            // o resto é tratado na função de baixo
             break;
         case(4):
-            camera_radius -= 1.5f;
-            if (camera_radius < 1.0f)
-                camera_radius = 1.0f;
+            if(camera_mode==1)
+                camera_radius += 3.0f;
+            break;
+        case(3):
+            if(camera_mode==1){
+                camera_radius -= 3.0f;
+                if (camera_radius < 1.0f)
+                    camera_radius = 1.0f;
+            }
             break;
         default:
             break;
@@ -463,16 +492,23 @@ void processMouseClick(int button, int state, int x, int y){
 }
 
 void processMouseMotion(int x, int y){
+    // 1 FPS
+    // 2 ORBITAL
+    if(!tracking)
+        return;
+
     float deltaX = (float)x-mousePosX;
     float deltaY = (float)y-mousePosY;
     mousePosX=(float)x;
     mousePosY=(float)y;
-    camera_alpha -= deltaX/400;
-    camera_beta += deltaY/400;
+
+    camera_alpha += deltaX/777;
+    camera_beta -= deltaY/777;
     if (camera_beta > 1.5f)
         camera_beta = 1.5f;
-    if (camera_beta < -1.5f)
+    else if (camera_beta < -1.5f)
         camera_beta = -1.5f;
+
     glutPostRedisplay();
 }
 
