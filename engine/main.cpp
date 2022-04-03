@@ -76,11 +76,11 @@ GLfloat mousePosX, mousePosY;
 int tracking = 0;
 
 //Obtem indíce de uma string dentro de um vetor
-int getIndex(vector<string> values, string value){
+int getIndex(const vector<string>& values, const string& value){
     int index = 0;
 
-    for (string s : values) { 
-        if (s.compare(value) == 0)
+    for (string s : values) {
+        if (s == value)
             return index;
         index++;
     }
@@ -145,7 +145,7 @@ void prepareData(const int ind, const char *file_name){
     //cout << "Value: " << value << endl; 
     glBindBuffer(GL_ARRAY_BUFFER, vertices[ind]);
     glBufferData(GL_ARRAY_BUFFER,
-                sizeof(float) * points.size(),
+                 sizeof(float) * points.size(),
                 points.data(),
                 GL_STATIC_DRAW);
     //cout << "Added => Vertices: " << vertices[ind] << " | VerticesCount: " << verticeCount[ind] << endl;
@@ -315,7 +315,7 @@ void changeSize(int w, int h){
 void renderGroup(Group * g){
     //Save current matrix
     glPushMatrix();
-    
+
     for(int i = 0 ; i < (g->transformationMatrix).size() ; i++){
         glMultMatrixf((g->transformationMatrix)[i].get());
     }
@@ -337,7 +337,7 @@ void renderGroup(Group * g){
     glPopMatrix();
 }
 
-void renderScene(void){
+void renderScene(){
     //Clear Buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -440,8 +440,7 @@ void processKeys(unsigned char key, int xx, int yy) {
                 camera_mode = 1;
                 camera_alpha = 0.0f;
                 camera_beta = 0.0f;
-            }
-            else{
+            }else{
                 camera_mode = 2;
             }
             break;
@@ -456,8 +455,8 @@ void processMouseClick(int button, int state, int x, int y){
     if(camera_mode==0) camera_mode = 1;
 
     switch (button) {
-        case(GLUT_MIDDLE_BUTTON):
-            break;
+        /*case(GLUT_MIDDLE_BUTTON):
+            break;*/
         case(GLUT_LEFT_BUTTON):
             if(state==GLUT_DOWN){
                 tracking=1;
@@ -497,6 +496,16 @@ void processMouseMotion(int x, int y){
     if (camera_beta < -1.5f)
         camera_beta = -1.5f;
     glutPostRedisplay();
+}
+
+void printInfo() {
+    printf("\n\nVendor: %s", glGetString(GL_VENDOR));
+    printf("\nRenderer: %s", glGetString(GL_RENDERER));
+    printf("\nVersion: %s", glGetString(GL_VERSION));
+
+    printf("\n\nUse the mouse and 'W A S D' to move the camera, scroll is used to zoom in and zoom out");
+    printf("\nTo change camera mode use 'M' and to reset camera to xml settings use 'I'\n");
+    fflush(stdout);
 }
 
 void processMousePassiveMotion(int x, int y){
@@ -578,6 +587,9 @@ int main(int argc, char **argv){
 
     //Enter GLUT's main cycle
     timebase = glutGet(GLUT_ELAPSED_TIME);
+
+    printInfo();
+
     glutMainLoop();
 
     return 0;
