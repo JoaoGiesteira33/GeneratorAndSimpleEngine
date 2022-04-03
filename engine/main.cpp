@@ -51,18 +51,12 @@ Group* rootGroup;
 vector<GLuint> vertices;
 vector<GLuint> verticeCount;
 
-
-
 //Camera Values
 int camera_mode = 0;
 
 float camera_alpha = 0.0f;
 float camera_beta = 0.0f;
 float camera_radius = 250.0f;
-
-float camera_upx;
-float camera_upy;
-float camera_upz;
 
 float camera_x;
 float camera_y;
@@ -80,9 +74,6 @@ float frame = 0;
 //Mouse values
 GLfloat mousePosX, mousePosY;
 int tracking = 0;
-
-
-
 
 //Obtem indíce de uma string dentro de um vetor
 int getIndex(vector<string> values, string value){
@@ -104,7 +95,7 @@ void orbitalCamera(){
 
     gluLookAt(camera_x, camera_y, camera_z,
               0.0f, 0.0f, 0.0f,
-              camera_upx,camera_upy,camera_upz);
+              0.0f,1.0f,0.0f);
 }
 
  void fpsCamera(){
@@ -114,7 +105,7 @@ void orbitalCamera(){
  
      gluLookAt(camera_x, camera_y, camera_z,
                    camera_x - camera_dx,camera_y - camera_dy, camera_z - camera_dz,
-               camera_upx,camera_upy,camera_upz);
+               0.0f,1.0f,0.0f);
  }
 
 
@@ -146,18 +137,18 @@ void prepareData(const int ind, const char *file_name){
     verticeCount.push_back(points.size()/3);
 
     //Criar o VBO
-    cout << "Indice in here is: " << ind << endl;
+    //cout << "Indice in here is: " << ind << endl;
     GLint value = ind + 1;
     vertices.push_back(value);
 
     //glGenBuffers(value,&vertices.at(ind));
-    cout << "Value: " << value << endl; 
+    //cout << "Value: " << value << endl; 
     glBindBuffer(GL_ARRAY_BUFFER, vertices[ind]);
     glBufferData(GL_ARRAY_BUFFER,
                 sizeof(float) * points.size(),
                 points.data(),
                 GL_STATIC_DRAW);
-    cout << "Added => Vertices: " << vertices[ind] << " | VerticesCount: " << verticeCount[ind] << endl;
+    //cout << "Added => Vertices: " << vertices[ind] << " | VerticesCount: " << verticeCount[ind] << endl;
 }
 
 int load_models(Group * group, XMLElement * pList){
@@ -300,10 +291,6 @@ int loadFileInfo(XMLNode * pRoot){
     camera_dy = docInfo.cameraInfo[1][1];
     camera_dz = docInfo.cameraInfo[1][2];
 
-    camera_upx = docInfo.cameraInfo[2][0];
-    camera_upy = docInfo.cameraInfo[2][1];
-    camera_upz = docInfo.cameraInfo[2][2];
-
     return 0;
 }
 
@@ -354,7 +341,6 @@ void renderScene(void){
     //Clear Buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //axis_system();
     //Set The Camera
     glLoadIdentity();
     if(camera_mode == 1){
@@ -415,8 +401,6 @@ void walkLeft(){
     camera_z -= 7.77f * aux_camera_dz;
 }
 
-
-
 void processKeys(unsigned char key, int xx, int yy) {
     //Code to process keys
 	switch (key){
@@ -447,22 +431,13 @@ void processKeys(unsigned char key, int xx, int yy) {
             camera_y = docInfo.cameraInfo[0][1];
             camera_z = docInfo.cameraInfo[0][2];
 
-            // ???????
             camera_dx = docInfo.cameraInfo[1][0];
             camera_dy = docInfo.cameraInfo[1][1];
             camera_dz = docInfo.cameraInfo[1][2];
-
-            camera_upx = docInfo.cameraInfo[2][0];
-            camera_upy = docInfo.cameraInfo[2][1];
-            camera_upz = docInfo.cameraInfo[2][2];
-
             break;
         case 'm':
             if(camera_mode==2 || camera_mode==0) {
                 camera_mode = 1;
-                camera_x = docInfo.cameraInfo[0][0];
-                camera_y = docInfo.cameraInfo[0][1];
-                camera_z = docInfo.cameraInfo[0][2];
                 camera_alpha = 0.0f;
                 camera_beta = 0.0f;
             }
@@ -482,7 +457,6 @@ void processMouseClick(int button, int state, int x, int y){
 
     switch (button) {
         case(GLUT_MIDDLE_BUTTON):
-            //put reset code !!!
             break;
         case(GLUT_LEFT_BUTTON):
             if(state==GLUT_DOWN){
