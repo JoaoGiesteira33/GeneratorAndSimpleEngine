@@ -58,15 +58,15 @@ int camera_mode = 0;
 
 float camera_alpha = 0.0f;
 float camera_beta = 0.0f;
-float camera_radius = 70.0f;
+float camera_radius = 77.7f;
 
 float camera_x;
 float camera_y;
 float camera_z;
 
-float camera_dx = 0.0f;
-float camera_dy = 0.0f;
-float camera_dz = 0.0f;
+float camera_dx;
+float camera_dy;
+float camera_dz;
 
 
 //FPS auxiliary Values
@@ -292,6 +292,10 @@ int loadFileInfo(XMLNode * pRoot){
     camera_y = docInfo.cameraInfo[0][1];
     camera_z = docInfo.cameraInfo[0][2];
 
+    camera_dx = docInfo.cameraInfo[1][0];
+    camera_dy = docInfo.cameraInfo[1][1];
+    camera_dz = docInfo.cameraInfo[1][2];
+
     return 0;
 }
 
@@ -342,14 +346,14 @@ void renderScene(void){
     //Clear Buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    //axis_system();
     //Set The Camera
     glLoadIdentity();
     if(camera_mode == 1){
         orbitalCamera();
-    }if(camera_mode == 2){
+    }else if(camera_mode == 2){
         fpsCamera();
-    }
-    else{
+    }else{
         gluLookAt(docInfo.cameraInfo[0][0],docInfo.cameraInfo[0][1],docInfo.cameraInfo[0][2],
         docInfo.cameraInfo[1][0],docInfo.cameraInfo[1][1],docInfo.cameraInfo[1][2],
         docInfo.cameraInfo[2][0],docInfo.cameraInfo[2][1],docInfo.cameraInfo[2][2]);
@@ -403,43 +407,41 @@ void walkLeft(){
     camera_z -= 7.77f * aux_camera_dz;
 }
 
+
+
 void processKeys(unsigned char key, int xx, int yy) {
     //Code to process keys
 	switch (key){
         case 'w':
-            if(camera_mode==0) camera_mode = 2;
-            if(camera_mode==2)
-                walkFront();
+            camera_mode=2;
+            walkFront();
             break;
         case 's':
-            if(camera_mode==0) camera_mode = 2;
-            if(camera_mode==2)
-                walkBack();
+            camera_mode=2;
+            walkBack();
             break;
         case 'a':
-            if(camera_mode==0) camera_mode = 2;
-            if(camera_mode==2)
-                walkLeft();
+            camera_mode=2;
+            walkLeft();
             break;
         case 'd':
-            if(camera_mode==0) camera_mode = 2;
-            if(camera_mode==2)
-                walkRight();
+            camera_mode=2;
+            walkRight();
             break;
         case 'i': //reset inicial values
             camera_mode = 0;
 
             camera_alpha = 0.0f;
             camera_beta = 0.0f;
-            camera_radius = 7.77f;
+            camera_radius = 70.0f;
 
             camera_x = docInfo.cameraInfo[0][0];
             camera_y = docInfo.cameraInfo[0][1];
             camera_z = docInfo.cameraInfo[0][2];
 
-            camera_dx = 0.0f;
-            camera_dy = 0.0f;
-            camera_dz = 0.0f;
+            camera_dx = docInfo.cameraInfo[1][0];
+            camera_dy = docInfo.cameraInfo[1][1];
+            camera_dz = docInfo.cameraInfo[1][2];
 
             break;
         case 'm':
@@ -451,9 +453,9 @@ void processKeys(unsigned char key, int xx, int yy) {
                 camera_alpha = 0.0f;
                 camera_beta = 0.0f;
             }
-            else
-                camera_radius = 1.0f;
+            else{
                 camera_mode = 2;
+            }
             break;
         default:
             break;
@@ -464,26 +466,28 @@ void processKeys(unsigned char key, int xx, int yy) {
 
 void processMouseClick(int button, int state, int x, int y){
     if(camera_mode==0) camera_mode = 1;
+
     switch (button) {
+        case(GLUT_MIDDLE_BUTTON):
+            //put reset code !!!
+            break;
         case(GLUT_LEFT_BUTTON):
             if(state==GLUT_DOWN){
-                tracking = 1;
+                tracking=1;
                 mousePosX=(float)x;
                 mousePosY=(float)y;
-            }else
+            }
+            else {
                 tracking = 0;
-            // o resto é tratado na função de baixo
+            }
+            break;
+        case (3):
+            camera_radius += 1.5f;
             break;
         case(4):
-            if(camera_mode==1)
-                camera_radius += 3.0f;
-            break;
-        case(3):
-            if(camera_mode==1){
-                camera_radius -= 3.0f;
-                if (camera_radius < 1.0f)
-                    camera_radius = 1.0f;
-            }
+            camera_radius -= 1.5f;
+            if (camera_radius < 1.0f)
+                camera_radius = 1.0f;
             break;
         default:
             break;
@@ -492,8 +496,6 @@ void processMouseClick(int button, int state, int x, int y){
 }
 
 void processMouseMotion(int x, int y){
-    // 1 FPS
-    // 2 ORBITAL
     if(!tracking)
         return;
 
@@ -501,15 +503,29 @@ void processMouseMotion(int x, int y){
     float deltaY = (float)y-mousePosY;
     mousePosX=(float)x;
     mousePosY=(float)y;
-
-    camera_alpha += deltaX/777;
-    camera_beta -= deltaY/777;
+    camera_alpha -= deltaX/400;
+    camera_beta += deltaY/400;
     if (camera_beta > 1.5f)
         camera_beta = 1.5f;
-    else if (camera_beta < -1.5f)
+    if (camera_beta < -1.5f)
         camera_beta = -1.5f;
-
     glutPostRedisplay();
+}
+
+void processMousePassiveMotion(int x, int y){
+    /*if(camera_mode==2){
+        float deltaX = (float)x-mousePosX;
+        float deltaY = (float)y-mousePosY;
+        mousePosX=(float)x;
+        mousePosY=(float)y;
+        camera_alpha -= deltaX/400;
+        camera_beta += deltaY/400;
+        if (camera_beta > 1.5f)
+            camera_beta = 1.5f;
+        if (camera_beta < -1.5f)
+            camera_beta = -1.5f;
+        glutPostRedisplay();
+    }*/
 }
 
 
@@ -553,6 +569,7 @@ int main(int argc, char **argv){
 	glutKeyboardFunc(processKeys);
     glutMouseFunc(processMouseClick);
     glutMotionFunc(processMouseMotion);
+    glutPassiveMotionFunc(processMousePassiveMotion);
 
     //Init GLEW
     #ifndef __APPLE__
