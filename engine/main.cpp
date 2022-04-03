@@ -58,7 +58,11 @@ int camera_mode = 0;
 
 float camera_alpha = 0.0f;
 float camera_beta = 0.0f;
-float camera_radius = 77.7f;
+float camera_radius = 250.0f;
+
+float camera_upx;
+float camera_upy;
+float camera_upz;
 
 float camera_x;
 float camera_y;
@@ -100,7 +104,7 @@ void orbitalCamera(){
 
     gluLookAt(camera_x, camera_y, camera_z,
               0.0f, 0.0f, 0.0f,
-              0.0f,1.0f,0.0f);
+              camera_upx,camera_upy,camera_upz);
 }
 
  void fpsCamera(){
@@ -110,7 +114,7 @@ void orbitalCamera(){
  
      gluLookAt(camera_x, camera_y, camera_z,
                    camera_x - camera_dx,camera_y - camera_dy, camera_z - camera_dz,
-                   0.0f,1.0f,0.0f);
+               camera_upx,camera_upy,camera_upz);
  }
 
 
@@ -296,6 +300,10 @@ int loadFileInfo(XMLNode * pRoot){
     camera_dy = docInfo.cameraInfo[1][1];
     camera_dz = docInfo.cameraInfo[1][2];
 
+    camera_upx = docInfo.cameraInfo[2][0];
+    camera_upy = docInfo.cameraInfo[2][1];
+    camera_upz = docInfo.cameraInfo[2][2];
+
     return 0;
 }
 
@@ -392,16 +400,16 @@ void walkBack(){
 }
 
 void walkRight(){
-    float aux_camera_dx = cosf(camera_beta) * sinf(camera_alpha+M_PI/2);
-    float aux_camera_dz = cosf(camera_beta) * cosf(camera_alpha+M_PI/2);
+    float aux_camera_dx = cosf(camera_beta) * sinf(camera_alpha+M_PI_2);
+    float aux_camera_dz = cosf(camera_beta) * cosf(camera_alpha+M_PI_2);
 
     camera_x += 7.77f * aux_camera_dx;
     camera_z += 7.77f * aux_camera_dz;
 }
 
 void walkLeft(){
-    float aux_camera_dx = cosf(camera_beta) * sinf(camera_alpha+M_PI/2);
-    float aux_camera_dz = cosf(camera_beta) * cosf(camera_alpha+M_PI/2);
+    float aux_camera_dx = cosf(camera_beta) * sinf(camera_alpha+M_PI_2);
+    float aux_camera_dz = cosf(camera_beta) * cosf(camera_alpha+M_PI_2);
 
     camera_x -= 7.77f * aux_camera_dx;
     camera_z -= 7.77f * aux_camera_dz;
@@ -433,15 +441,20 @@ void processKeys(unsigned char key, int xx, int yy) {
 
             camera_alpha = 0.0f;
             camera_beta = 0.0f;
-            camera_radius = 70.0f;
+            camera_radius = 250.0f;
 
             camera_x = docInfo.cameraInfo[0][0];
             camera_y = docInfo.cameraInfo[0][1];
             camera_z = docInfo.cameraInfo[0][2];
 
+            // ???????
             camera_dx = docInfo.cameraInfo[1][0];
             camera_dy = docInfo.cameraInfo[1][1];
             camera_dz = docInfo.cameraInfo[1][2];
+
+            camera_upx = docInfo.cameraInfo[2][0];
+            camera_upy = docInfo.cameraInfo[2][1];
+            camera_upz = docInfo.cameraInfo[2][2];
 
             break;
         case 'm':
