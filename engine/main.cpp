@@ -89,6 +89,17 @@ float frame = 0;
 GLfloat mousePosX, mousePosY;
 int tracking = 0;
 
+void renderCatmullRomCurve(float **points, int point_count) {
+	float point[3];
+	float dir[3];
+	glBegin(GL_LINE_LOOP);
+	for(float t = 0 ; t < 1 ; t += 0.001f){
+		getGlobalCatmullRomPoint(t,point,dir,points,point_count);
+		glVertex3f(point[0],point[1],point[2]);
+	}
+	glEnd();
+}
+
 void updateRotateMatrix(Group * g, TimeDependentRotate * tdr){
     Matrix4 rotationMatrix;
 
@@ -139,6 +150,7 @@ void updateTranslateMatrix(Group * g, TimeDependentTranslate * tdt){
     }
     //Update matrix
     g->transformationMatrix[tdt->matrix_index] = transformationMatrix;
+    renderCatmullRomCurve(points,point_count);
 }
 
 //Obtem indíce de uma string dentro de um vetor
@@ -245,50 +257,7 @@ int load_models(Group * group, XMLElement * pList){
 
     return 0;
 }
-/*
-vector<Matrix4> load_matrix(XMLElement * transforms){
-    vector<Matrix4> ret;
-    XMLError eResult;
-    float x,y,z,angle;
-    int transformation_index = 0; // Order transformations to save timed ones
 
-    XMLElement * pElement = transforms->FirstChildElement();
-    while(pElement != nullptr){
-        if(strcmp(pElement->Value(),"translate") == 0){
-            if(pElement->Attribute("time") == NULL){ //Static Translate
-                cout << "Static Translate" << endl;
-                eResult = pElement->QueryFloatAttribute("x",&x);
-                eResult = pElement->QueryFloatAttribute("y",&y);
-                eResult = pElement->QueryFloatAttribute("z",&z);
-                Matrix4 res;
-                res.translate(x,y,z);
-                ret.push_back(res);
-            }else{ //Time Dependent Translate
-                TimeDependentTranslate *tdt = new TimeDependentTranslate;
-            }
-        }else if(strcmp(pElement->Value(),"rotate") == 0){
-            eResult = pElement->QueryFloatAttribute("angle",&angle);
-            eResult = pElement->QueryFloatAttribute("x",&x);
-            eResult = pElement->QueryFloatAttribute("y",&y);
-            eResult = pElement->QueryFloatAttribute("z",&z);
-            Matrix4 res;
-            res.rotate(angle,x,y,z);
-            ret.push_back(res);
-        }else if(strcmp(pElement->Value(),"scale") == 0){
-            eResult = pElement->QueryFloatAttribute("x",&x);
-            eResult = pElement->QueryFloatAttribute("y",&y);
-            eResult = pElement->QueryFloatAttribute("z",&z);
-            Matrix4 res;
-            res.scale(x,y,z);
-            ret.push_back(res);
-        }
-        pElement = pElement->NextSiblingElement();
-        transformation_index++;
-    }
-
-    return ret;
-}
-*/
 void load_matrix(Group * group, XMLElement * transforms){
     vector<Matrix4> ret;
     XMLError eResult;
@@ -367,6 +336,7 @@ void load_matrix(Group * group, XMLElement * transforms){
 
     group->transformationMatrix = ret;
 }
+
 Group* load_group(XMLElement * pList){
     Group * retGroup = new Group;
 
