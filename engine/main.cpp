@@ -40,8 +40,21 @@ struct XMLInfo{
     vector<string> models; //Models to be loaded
 };
 
+struct TimeDependentTranslate{
+    int matrix_index; //Matrix in the group saving the transformation values
+    int time, align; //Align 1 is True, Align 0 is False
+    vector<float> coordinates;
+};
+struct TimeDependentRotate{
+    int matrix_index; //Matrix in the group saving the transformation values
+    int time;
+    vector<float> coordinates;
+};
+
 struct Group{
     vector<Matrix4> transformationMatrix;
+    vector<TimeDependentTranslate*> timeDependentTranslates;
+    vector <TimeDependentRotate*> timeDependentRotates;
     vector<int> models_indices;
     vector<Group*> groups;
 };
@@ -107,7 +120,6 @@ void orbitalCamera(){
                    camera_x - camera_dx,camera_y - camera_dy, camera_z - camera_dz,
                0.0f,1.0f,0.0f);
  }
-
 
 //Carrega informação sobre vértices num ficheiro para o programa
 void prepareData(const int ind, const char *file_name){
@@ -180,21 +192,27 @@ int load_models(Group * group, XMLElement * pList){
 
     return 0;
 }
-
+/*
 vector<Matrix4> load_matrix(XMLElement * transforms){
     vector<Matrix4> ret;
     XMLError eResult;
     float x,y,z,angle;
+    int transformation_index = 0; // Order transformations to save timed ones
 
     XMLElement * pElement = transforms->FirstChildElement();
     while(pElement != nullptr){
         if(strcmp(pElement->Value(),"translate") == 0){
-            eResult = pElement->QueryFloatAttribute("x",&x);
-            eResult = pElement->QueryFloatAttribute("y",&y);
-            eResult = pElement->QueryFloatAttribute("z",&z);
-            Matrix4 res;
-            res.translate(x,y,z);
-            ret.push_back(res);
+            if(pElement->Attribute("time") == NULL){ //Static Translate
+                cout << "Static Translate" << endl;
+                eResult = pElement->QueryFloatAttribute("x",&x);
+                eResult = pElement->QueryFloatAttribute("y",&y);
+                eResult = pElement->QueryFloatAttribute("z",&z);
+                Matrix4 res;
+                res.translate(x,y,z);
+                ret.push_back(res);
+            }else{ //Time Dependent Translate
+                TimeDependentTranslate *tdt = new TimeDependentTranslate;
+            }
         }else if(strcmp(pElement->Value(),"rotate") == 0){
             eResult = pElement->QueryFloatAttribute("angle",&angle);
             eResult = pElement->QueryFloatAttribute("x",&x);
@@ -212,18 +230,98 @@ vector<Matrix4> load_matrix(XMLElement * transforms){
             ret.push_back(res);
         }
         pElement = pElement->NextSiblingElement();
+        transformation_index++;
     }
 
     return ret;
 }
+*/
+void load_matrix(Group * group, XMLElement * transforms){
+    vector<Matrix4> ret;
+    XMLError eResult;
+    float x,y,z,angle;
+    static int transformation_index = 0; // Order transformations to save timed ones
 
+    XMLElement * pElement = transforms->FirstChildElement();
+    while(pElement != nullptr){
+        cout << "Transformation Index: " << transformation_index << endl;
+        if(strcmp(pElement->Value(),"translate") == 0){
+            if(pElement->Attribute("time") == NULL){ //Static Translate
+                eResult = pElement->QueryFloatAttribute("x",&x);
+                eResult = pElement->QueryFloatAttribute("y",&y);
+                eResult = pElement->QueryFloatAttribute("z",&z);
+
+                Matrix4 res;
+                res.translate(x,y,z);
+                ret.push_back(res);
+            }else{ //Time Dependent Translate
+                TimeDependentTranslate *tdt = new TimeDependentTranslate;
+                //Save Matrix Index
+                tdt->matrix_index = transformation_index;
+                //Save Time
+                pElement->QueryIntAttribute("time",&(tdt->time));
+                //Save Alignment
+                if(pElement->Attribute("align","True")) tdt->align = 1;
+                else tdt->align = 0;
+                //Save Points
+                XMLElement * pointLine = pElement->FirstChildElement("point");
+                while(pointLine != nullptr){
+                    eResult = pointLine->QueryFloatAttribute("x",&x); tdt->coordinates.push_back(x);
+                    eResult = pointLine->QueryFloatAttribute("y",&y); tdt->coordinates.push_back(y);
+                    eResult = pointLine->QueryFloatAttribute("z",&z); tdt->coordinates.push_back(z);
+
+                    pointLine = pointLine->NextSiblingElement("point");
+                }
+
+                group->timeDependentTranslates.push_back(tdt);
+                //!!!!!!!!!!!!!!!!!!!!!Load matrix transformation for Time = 0 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            }
+        }else if(strcmp(pElement->Value(),"rotate") == 0){
+            eResult = pElement->QueryFloatAttribute("x",&x);
+            eResult = pElement->QueryFloatAttribute("y",&y);
+            eResult = pElement->QueryFloatAttribute("z",&z);
+            Matrix4 res;
+            
+            if(pElement->Attribute("time") == NULL){ //Static Rotate
+                eResult = pElement->QueryFloatAttribute("angle",&angle);
+                res.rotate(angle,x,y,z);
+            }
+            else{ //Time Dependent Rotate
+                TimeDependentRotate * tdr = new TimeDependentRotate;
+                //Save Matrix Index
+                tdr->matrix_index = transformation_index;
+                //Save Time
+                pElement->QueryIntAttribute("time",&(tdr->time));
+                //Save Axis
+                tdr->coordinates.push_back(x); tdr->coordinates.push_back(y); tdr->coordinates.push_back(z);
+
+                group->timeDependentRotates.push_back(tdr);
+                //Load matrix transformation for Time 0
+                res.rotate(0,x,y,z);
+            }
+
+            ret.push_back(res);
+        }else if(strcmp(pElement->Value(),"scale") == 0){
+            eResult = pElement->QueryFloatAttribute("x",&x);
+            eResult = pElement->QueryFloatAttribute("y",&y);
+            eResult = pElement->QueryFloatAttribute("z",&z);
+            Matrix4 res;
+            res.scale(x,y,z);
+            ret.push_back(res);
+        }
+        transformation_index++;
+        pElement = pElement->NextSiblingElement();
+    }
+
+    group->transformationMatrix = ret;
+}
 Group* load_group(XMLElement * pList){
     Group * retGroup = new Group;
 
     //Transformations
     XMLElement * transforms = pList->FirstChildElement("transform");
     if(transforms != nullptr){
-        retGroup->transformationMatrix = load_matrix(transforms);
+        load_matrix(retGroup,transforms);
     }
 
     //Models
@@ -315,6 +413,27 @@ void changeSize(int w, int h){
 void renderGroup(Group * g){
     //Save current matrix
     glPushMatrix();
+
+    //Maybe here update transformation matrix for this group!
+    for(int i = 0 ; i < (g->timeDependentTranslates).size() ; i++){
+        TimeDependentTranslate aux = *((g->timeDependentTranslates)[i]);
+        cout << "Index In File: " << aux.matrix_index << endl; 
+        cout << "Time: " << aux.time << " | Align: " << aux.align << endl;
+        for(int j = 0 ; j < (aux.coordinates).size() ; j+= 3)
+            cout << "X: " << (aux.coordinates)[j] <<
+            " | Y: " << (aux.coordinates)[j+1] <<
+            " | Z: " << (aux.coordinates)[j+2] << endl;
+    }
+
+    for(int i = 0 ; i < (g->timeDependentRotates).size() ; i++){
+        TimeDependentRotate aux = *((g->timeDependentRotates)[i]);
+        cout << "Index In File: " << aux.matrix_index << endl; 
+        cout << "Time: " << aux.time << endl;
+        for(int j = 0 ; j < (aux.coordinates).size() ; j+= 3)
+            cout << "X: " << (aux.coordinates)[j] <<
+            " | Y: " << (aux.coordinates)[j+1] <<
+            " | Z: " << (aux.coordinates)[j+2] << endl;
+    }
 
     for(int i = 0 ; i < (g->transformationMatrix).size() ; i++){
         glMultMatrixf((g->transformationMatrix)[i].get());
@@ -450,7 +569,6 @@ void processKeys(unsigned char key, int xx, int yy) {
 	glutPostRedisplay();
 }
 
-
 void processMouseClick(int button, int state, int x, int y){
     if(camera_mode==0) camera_mode = 1;
 
@@ -523,7 +641,6 @@ void processMousePassiveMotion(int x, int y){
         glutPostRedisplay();
     }*/
 }
-
 
 int main(int argc, char **argv){
     if(!argv[1] || !*argv[1]) {
