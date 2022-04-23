@@ -114,7 +114,7 @@ void updateRotateMatrix(Group * g, TimeDependentRotate * tdr){
 }
 
 void updateTranslateMatrix(Group * g, TimeDependentTranslate * tdt){
-    Matrix4 transformationMatrix;
+    Matrix4 tmatrix;
     int point_count = (tdt->coordinates).size() / 3;
     //Create matrix for point
     float** points = new float*[point_count];
@@ -134,7 +134,7 @@ void updateTranslateMatrix(Group * g, TimeDependentTranslate * tdt){
 	float dir[3];
 	getGlobalCatmullRomPoint(time_elapsed,point,dir,points,point_count);
 
-    transformationMatrix.translate(point[0],point[1],point[2]);
+    tmatrix.translate(point[0],point[1],point[2]);
     
     if(tdt->align == 1){
 	    float rotMatrix[4][4];
@@ -146,10 +146,10 @@ void updateTranslateMatrix(Group * g, TimeDependentTranslate * tdt){
 	    //Calculate Rotation Matrix
 	    normalize(x);normalize(y);normalize(z);
 	    buildRotMatrix(x,y,z,(float *)rotMatrix);
-        transformationMatrix = transformationMatrix * Matrix4((float*)rotMatrix);
+        tmatrix = tmatrix * Matrix4((float*)rotMatrix);
     }
     //Update matrix
-    g->transformationMatrix[tdt->matrix_index] = transformationMatrix;
+    g->transformationMatrix[tdt->matrix_index] = tmatrix;
     renderCatmullRomCurve(points,point_count);
 }
 
@@ -262,7 +262,7 @@ void load_matrix(Group * group, XMLElement * transforms){
     vector<Matrix4> ret;
     XMLError eResult;
     float x,y,z,angle;
-    static int transformation_index = 0; // Order transformations to save timed ones
+    int transformation_index = 0; // Order transformations to save timed ones
 
     XMLElement * pElement = transforms->FirstChildElement();
     while(pElement != nullptr){
@@ -270,12 +270,14 @@ void load_matrix(Group * group, XMLElement * transforms){
         if(strcmp(pElement->Value(),"translate") == 0){
             Matrix4 res;
             if(pElement->Attribute("time") == NULL){ //Static Translate
+                cout << "Static Translate" << endl;
                 eResult = pElement->QueryFloatAttribute("x",&x);
                 eResult = pElement->QueryFloatAttribute("y",&y);
                 eResult = pElement->QueryFloatAttribute("z",&z);
 
                 res.translate(x,y,z);
             }else{ //Time Dependent Translate
+                cout << "TimeBased Translate" << endl;
                 TimeDependentTranslate *tdt = new TimeDependentTranslate;
                 //Save Matrix Index
                 tdt->matrix_index = transformation_index;
@@ -305,10 +307,13 @@ void load_matrix(Group * group, XMLElement * transforms){
             Matrix4 res;
             
             if(pElement->Attribute("time") == NULL){ //Static Rotate
+                cout << "Static Rotate" << endl;
                 eResult = pElement->QueryFloatAttribute("angle",&angle);
+                cout << "Static Rotate Angle: " << angle << endl;
                 res.rotate(angle,x,y,z);
             }
             else{ //Time Dependent Rotate
+                cout << "TimeBased Rotate" << endl;
                 TimeDependentRotate * tdr = new TimeDependentRotate;
                 //Save Matrix Index
                 tdr->matrix_index = transformation_index;
@@ -323,6 +328,7 @@ void load_matrix(Group * group, XMLElement * transforms){
             }
             ret.push_back(res);
         }else if(strcmp(pElement->Value(),"scale") == 0){
+            cout << "Scale" << endl;
             eResult = pElement->QueryFloatAttribute("x",&x);
             eResult = pElement->QueryFloatAttribute("y",&y);
             eResult = pElement->QueryFloatAttribute("z",&z);
@@ -446,7 +452,7 @@ void renderGroup(Group * g){
         TimeDependentRotate * aux = (g->timeDependentRotates)[i];
         updateRotateMatrix(g,aux);
     }
-
+    
     //Apply transformation
     for(int i = 0 ; i < (g->transformationMatrix).size() ; i++){
         glMultMatrixf((g->transformationMatrix)[i].get());
@@ -459,7 +465,7 @@ void renderGroup(Group * g){
         glVertexPointer(3,GL_FLOAT,0,0);
         glDrawArrays(GL_TRIANGLES,0,verticeCount[ind]);
     }
-
+    
     //Render sub-groups
     for(int i = 0 ; i < (g->groups).size() ; i++){
         renderGroup((g->groups)[i]);
@@ -500,7 +506,6 @@ void renderScene(){
 
     //Rendering
     renderGroup(rootGroup);
-
     //End of Frame
     glutSwapBuffers();
 }
