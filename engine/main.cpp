@@ -89,6 +89,19 @@ float frame = 0;
 GLfloat mousePosX, mousePosY;
 int tracking = 0;
 
+void updateRotateMatrix(Group * g, TimeDependentRotate * tdr){
+    Matrix4 rotationMatrix;
+
+    float time_elapsed = glutGet(GLUT_ELAPSED_TIME);
+    time_elapsed = time_elapsed / 1000;
+    time_elapsed = time_elapsed / (tdr->time);
+    float angle = 360 * time_elapsed;
+
+    rotationMatrix.rotate(angle,tdr->coordinates[0],tdr->coordinates[1],tdr->coordinates[2]);
+
+    g->transformationMatrix[tdr->matrix_index] = rotationMatrix;
+}
+
 void updateTranslateMatrix(Group * g, TimeDependentTranslate * tdt){
     Matrix4 transformationMatrix;
     int point_count = (tdt->coordinates).size() / 3;
@@ -339,7 +352,6 @@ void load_matrix(Group * group, XMLElement * transforms){
                 //Load matrix transformation for Time 0
                 res.rotate(0,x,y,z);
             }
-
             ret.push_back(res);
         }else if(strcmp(pElement->Value(),"scale") == 0){
             eResult = pElement->QueryFloatAttribute("x",&x);
@@ -462,8 +474,10 @@ void renderGroup(Group * g){
 
     for(int i = 0 ; i < (g->timeDependentRotates).size() ; i++){
         TimeDependentRotate * aux = (g->timeDependentRotates)[i];
+        updateRotateMatrix(g,aux);
     }
 
+    //Apply transformation
     for(int i = 0 ; i < (g->transformationMatrix).size() ; i++){
         glMultMatrixf((g->transformationMatrix)[i].get());
     }
