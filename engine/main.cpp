@@ -89,6 +89,45 @@ float frame = 0;
 GLfloat mousePosX, mousePosY;
 int tracking = 0;
 
+void updateTranslateMatrix(Group * g, TimeDependentTranslate * tdt){
+    Matrix4 transformationMatrix;
+    int point_count = (tdt->coordinates).size() / 3;
+    //Create matrix for point
+    float** points = new float*[point_count];
+    for(int i = 0; i < point_count; ++i){
+        points[i] = new float[3];
+        points[i][0] = tdt->coordinates[3*i];
+        points[i][1] = tdt->coordinates[3*i+1];
+        points[i][2] = tdt->coordinates[3*i+2];
+    }
+    //Elapsed Time
+    float time_elapsed = glutGet(GLUT_ELAPSED_TIME);
+    time_elapsed = time_elapsed / 1000;
+    time_elapsed = time_elapsed / (tdt->time);
+
+    //Calculate Matrix
+	float point[3];
+	float dir[3];
+	getGlobalCatmullRomPoint(time_elapsed,point,dir,points,point_count);
+
+    transformationMatrix.translate(point[0],point[1],point[2]);
+    
+    if(tdt->align == 1){
+	    float rotMatrix[4][4];
+	    float x[3]; x[0] = dir[0]; x[1] = dir[1]; x[2] = dir[2];
+	    static float y[3] = {0,1,0};
+	    float z[3]; cross(x,y,z);
+	    cross(z,x,y);
+
+	    //Calculate Rotation Matrix
+	    normalize(x);normalize(y);normalize(z);
+	    buildRotMatrix(x,y,z,(float *)rotMatrix);
+        transformationMatrix = transformationMatrix * Matrix4((float*)rotMatrix);
+    }
+    //Update matrix
+    g->transformationMatrix[tdt->matrix_index] = transformationMatrix;
+}
+
 //Obtem indíce de uma string dentro de um vetor
 int getIndex(const vector<string>& values, const string& value){
     int index = 0;
@@ -247,14 +286,13 @@ void load_matrix(Group * group, XMLElement * transforms){
     while(pElement != nullptr){
         cout << "Transformation Index: " << transformation_index << endl;
         if(strcmp(pElement->Value(),"translate") == 0){
+            Matrix4 res;
             if(pElement->Attribute("time") == NULL){ //Static Translate
                 eResult = pElement->QueryFloatAttribute("x",&x);
                 eResult = pElement->QueryFloatAttribute("y",&y);
                 eResult = pElement->QueryFloatAttribute("z",&z);
 
-                Matrix4 res;
                 res.translate(x,y,z);
-                ret.push_back(res);
             }else{ //Time Dependent Translate
                 TimeDependentTranslate *tdt = new TimeDependentTranslate;
                 //Save Matrix Index
@@ -273,10 +311,11 @@ void load_matrix(Group * group, XMLElement * transforms){
 
                     pointLine = pointLine->NextSiblingElement("point");
                 }
-
+                //Add to vector of time dependent translations
                 group->timeDependentTranslates.push_back(tdt);
-                //!!!!!!!!!!!!!!!!!!!!!Load matrix transformation for Time = 0 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             }
+            //Add to vector of transformations
+            ret.push_back(res);
         }else if(strcmp(pElement->Value(),"rotate") == 0){
             eResult = pElement->QueryFloatAttribute("x",&x);
             eResult = pElement->QueryFloatAttribute("y",&y);
@@ -417,23 +456,12 @@ void renderGroup(Group * g){
 
     //Maybe here update transformation matrix for this group!
     for(int i = 0 ; i < (g->timeDependentTranslates).size() ; i++){
-        TimeDependentTranslate aux = *((g->timeDependentTranslates)[i]);
-        cout << "Index In File: " << aux.matrix_index << endl; 
-        cout << "Time: " << aux.time << " | Align: " << aux.align << endl;
-        for(int j = 0 ; j < (aux.coordinates).size() ; j+= 3)
-            cout << "X: " << (aux.coordinates)[j] <<
-            " | Y: " << (aux.coordinates)[j+1] <<
-            " | Z: " << (aux.coordinates)[j+2] << endl;
+        TimeDependentTranslate * aux = (g->timeDependentTranslates)[i];
+        updateTranslateMatrix(g,aux);
     }
 
     for(int i = 0 ; i < (g->timeDependentRotates).size() ; i++){
-        TimeDependentRotate aux = *((g->timeDependentRotates)[i]);
-        cout << "Index In File: " << aux.matrix_index << endl; 
-        cout << "Time: " << aux.time << endl;
-        for(int j = 0 ; j < (aux.coordinates).size() ; j+= 3)
-            cout << "X: " << (aux.coordinates)[j] <<
-            " | Y: " << (aux.coordinates)[j+1] <<
-            " | Z: " << (aux.coordinates)[j+2] << endl;
+        TimeDependentRotate * aux = (g->timeDependentRotates)[i];
     }
 
     for(int i = 0 ; i < (g->transformationMatrix).size() ; i++){
@@ -473,9 +501,6 @@ void renderScene(){
         docInfo.cameraInfo[2][0],docInfo.cameraInfo[2][1],docInfo.cameraInfo[2][2]);
     }
 
-    //Rendering
-    renderGroup(rootGroup);
-
     //FPS Calculation
     frame++;
     int time = glutGet(GLUT_ELAPSED_TIME);
@@ -488,6 +513,10 @@ void renderScene(){
         sprintf(buffer, "FPS: %f", fps);
         glutSetWindowTitle(buffer);
     }
+
+    //Rendering
+    renderGroup(rootGroup);
+
     //End of Frame
     glutSwapBuffers();
 }
@@ -677,7 +706,7 @@ int main(int argc, char **argv){
     //Required callback registry
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);
-    //glutIdleFunc(renderScene);
+    glutIdleFunc(renderScene);
 
     //Callback registration for keyboard processing
 	glutKeyboardFunc(processKeys);

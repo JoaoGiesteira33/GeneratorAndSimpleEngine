@@ -1,3 +1,5 @@
+#include "TimeBasedTransformations.h"
+
 void buildRotMatrix(float *x, float *y, float *z, float *m) {
 
 	m[0] = x[0]; m[1] = x[1]; m[2] = x[2]; m[3] = 0;
@@ -94,18 +96,19 @@ void getCatmullRomPoint(float t, float *p0, float *p1, float *p2, float *p3, flo
 }
 
 // given  global t, returns the point in the curve
-void getGlobalCatmullRomPoint(float gt, float *pos, float *deriv) {
+void getGlobalCatmullRomPoint(float gt, float *pos, float *deriv, float**p, int point_count) {
 
-	float t = gt * POINT_COUNT; // this is the real global t
+	float t = gt * point_count; // this is the real global t
 	int index = floor(t);  // which segment
 	t = t - index; // where within  the segment
 
 	// indices store the points
 	int indices[4]; 
-	indices[0] = (index + POINT_COUNT-1)%POINT_COUNT;	
-	indices[1] = (indices[0]+1)%POINT_COUNT;
-	indices[2] = (indices[1]+1)%POINT_COUNT; 
-	indices[3] = (indices[2]+1)%POINT_COUNT;
+	indices[0] = (index + point_count-1)%point_count;	
+	indices[1] = (indices[0]+1)%point_count;
+	indices[2] = (indices[1]+1)%point_count; 
+	indices[3] = (indices[2]+1)%point_count;
 
 	getCatmullRomPoint(t, p[indices[0]], p[indices[1]], p[indices[2]], p[indices[3]], pos, deriv);
 }
+
