@@ -38,9 +38,7 @@ long factorial(int n) {
 }
  
 long nCr(int n, int r) {
-    //printf("COMBINATION: %d C %d = %d\n", n,r, factorial(n) / (factorial(r) * factorial(n - r)));
-    return factorial(n) / (factorial(r) * factorial(n - r));
-   
+    return factorial(n) / (factorial(r) * factorial(n - r)); 
 }
 
 Point bernsteins_polinomials(float t, Point p0, Point p1, Point p2, Point p3){
@@ -49,13 +47,7 @@ Point bernsteins_polinomials(float t, Point p0, Point p1, Point p2, Point p3){
     p->x = pow(t,3) * p3->x + 3*pow(t,2) * (1-t)* p2->x + 3*t* pow(1-t,2) * p1->x + pow(1-t,3) * p0->x;
     p->y = pow(t,3) * p3->y + 3*pow(t,2) * (1-t)* p2->y + 3*t* pow(1-t,2) * p1->y + pow(1-t,3) * p0->y;
     p->z = pow(t,3) * p3->z + 3*pow(t,2) * (1-t)* p2->z + 3*t* pow(1-t,2) * p1->z + pow(1-t,3) * p0->z;
-    /*printf("___________________________________________________________\n");
-    for(int i=0; i<n; i++){
-        printf("-> %d * %f^%d * (1-%f)^%d *%f \n", nCr(n,i),t,i,t,n-i,points[i]->x);
-        p->x += nCr(n,i) * pow(t,i)* pow(1-t,n-i) * points[i]->x;
-        p->y += nCr(n,i) * pow(t,i)* pow(1-t,n-i) * points[i]->y;
-        p->z += nCr(n,i) * pow(t,i)* pow(1-t,n-i) * points[i]->z;
-    }*/
+
     return p;
 }
 
@@ -123,26 +115,25 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
         line_counter++;
     }
 
-    int pts_gerados=0;
-    float t =(float) 1/tecel;
+    float t =(float) 1/tecel; //fração de tecelagem
 
-    Point teapot[n_patches][tecel+1][tecel+1];
+    Point teapot[n_patches][tecel+1][tecel+1]; //guarda os pontos de cada patch gerado por tecelagem
     
     for(int i=0; i<n_patches; i++){
-        Point *pts = get_patch_points(ctrl_points,index_patch[i], nr_points);
+        Point *pts = get_patch_points(ctrl_points,index_patch[i], nr_points); //função para get os 16 pts do patch
 
         for(int k=0; k<=tecel; k++){
-            Point p0 = bernsteins_polinomials(k*t,pts[0], pts[1], pts[2], pts[3]);
+            Point p0 = bernsteins_polinomials(k*t,pts[0], pts[1], pts[2], pts[3]); //pontos de controlo por k
             Point p1 = bernsteins_polinomials(k*t,pts[4], pts[5], pts[6], pts[7]);
             Point p2 = bernsteins_polinomials(k*t,pts[8], pts[9], pts[10], pts[11]);
             Point p3 = bernsteins_polinomials(k*t,pts[12], pts[13], pts[14], pts[15]);
 
             for(int v=0; v<=tecel ; v++){
-                teapot[i][k][v]=bernsteins_polinomials(v*t, p0,p1,p2,p3);
-                //std::cout<<": teapot["<<i<<"]["<<k<<"]["<<v<<"]: "<<teapot[i][k][v]->x<<" , "<<teapot[i][k][v]->y<<" , "<<teapot[i][k][v]->z<<"\n";
+                teapot[i][k][v]=bernsteins_polinomials(v*t, p0,p1,p2,p3); //ponto de controlo de v
             }
         }
     }
+    //escrever os pontos na ordem certa de forma a fazer triângulos
     for(int i=0; i<n_patches; i++){
         for(int k=0; k<tecel; k++){
             for(int v=0; v<tecel; v++){
