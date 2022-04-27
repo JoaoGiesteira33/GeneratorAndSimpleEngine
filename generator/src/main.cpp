@@ -151,7 +151,7 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
     }
 }
 
-int gen_bezier(char** args){
+void gen_bezier(char** args){
     
     std::ifstream infile;
     infile.open(args[2]);
