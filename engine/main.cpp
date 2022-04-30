@@ -93,7 +93,7 @@ void renderCatmullRomCurve(float **points, int point_count) {
 	float point[3];
 	float dir[3];
 	glBegin(GL_LINE_LOOP);
-	for(float t = 0 ; t < 1 ; t += 0.001f){
+	for(float t = 0 ; t < 1 ; t += 0.01f){
 		getGlobalCatmullRomPoint(t,point,dir,points,point_count);
 		glVertex3f(point[0],point[1],point[2]);
 	}
@@ -442,12 +442,11 @@ void renderGroup(Group * g){
     //Save current matrix
     glPushMatrix();
 
-    //Maybe here update transformation matrix for this group!
+    //Update Time Dependent Transformations
     for(int i = 0 ; i < (g->timeDependentTranslates).size() ; i++){
         TimeDependentTranslate * aux = (g->timeDependentTranslates)[i];
         updateTranslateMatrix(g,aux);
     }
-
     for(int i = 0 ; i < (g->timeDependentRotates).size() ; i++){
         TimeDependentRotate * aux = (g->timeDependentRotates)[i];
         updateRotateMatrix(g,aux);
