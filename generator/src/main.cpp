@@ -117,7 +117,7 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
 
     float t =(float) 1/tecel; //fração de tecelagem
 
-    Point teapot[n_patches][tecel+1][tecel+1]; //guarda os pontos de cada patch gerado por tecelagem
+    Point final_pts[n_patches][tecel+1][tecel+1]; //guarda os pontos de cada patch gerado por tecelagem
     
     for(int i=0; i<n_patches; i++){
         Point *pts = get_patch_points(ctrl_points,index_patch[i], nr_points); //função para get os 16 pts do patch
@@ -129,7 +129,7 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
             Point p3 = bernsteins_polinomials(k*t,pts[12], pts[13], pts[14], pts[15]);
 
             for(int v=0; v<=tecel ; v++){
-                teapot[i][k][v]=bernsteins_polinomials(v*t, p0,p1,p2,p3); //ponto de controlo de v
+                final_pts[i][k][v]=bernsteins_polinomials(v*t, p0,p1,p2,p3); //ponto de controlo de v
             }
         }
     }
@@ -137,14 +137,14 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
     for(int i=0; i<n_patches; i++){
         for(int k=0; k<tecel; k++){
             for(int v=0; v<tecel; v++){
-                write_point(teapot[i][k][v], file);
-                write_point(teapot[i][k+1][v], file);
-                write_point(teapot[i][k][v+1], file);  
+                write_point(final_pts[i][k][v], file);
+                write_point(final_pts[i][k+1][v], file);
+                write_point(final_pts[i][k][v+1], file);  
                 file<<std::endl;
 
-                write_point(teapot[i][k][v+1], file);
-                write_point(teapot[i][k+1][v], file);
-                write_point(teapot[i][k+1][v+1], file);
+                write_point(final_pts[i][k][v+1], file);
+                write_point(final_pts[i][k+1][v], file);
+                write_point(final_pts[i][k+1][v+1], file);
                 file<<std::endl;
             }
         }
