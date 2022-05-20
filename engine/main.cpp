@@ -65,6 +65,7 @@ struct Group{
     vector<TimeDependentTranslate*> timeDependentTranslates;
     vector <TimeDependentRotate*> timeDependentRotates;
     vector<int> models_indices;
+    vector<ModelInfo> models_info;
     vector<Group*> groups;
 };
 
@@ -281,6 +282,9 @@ int load_models(Group * group, XMLElement * pList){
             (group->models_indices).push_back(docInfo.models.size());
             docInfo.models.push_back(newModelFile);
         }
+
+        ModelInfo newModelInfo = loadModelInfo(pListElement);
+        group->models_info.push_back(newModelInfo);
 
         //Continuar a iterar
         pListElement = pListElement->NextSiblingElement("model");
@@ -529,6 +533,8 @@ void renderGroup(Group * g){
     //Render models
     for(int i = 0 ; i < (g->models_indices).size() ; i++){
         int ind = (g->models_indices)[i];
+        ModelInfo mi = g->models_info[i];
+        cout << "Ambient: " << mi.ambient[0] << " | " << mi.ambient[1] << " | " << mi.ambient[2] << endl;
         glBindBuffer(GL_ARRAY_BUFFER,vertices[ind]);
         glVertexPointer(3,GL_FLOAT,0,0);
         glDrawArrays(GL_TRIANGLES,0,verticeCount[ind]);

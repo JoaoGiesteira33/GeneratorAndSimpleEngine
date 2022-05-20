@@ -19,4 +19,6 @@ struct ModelInfo{
     ModelInfo();
 };
 
+ModelInfo loadModelInfo(XMLElement * pElement);
+
 #endif
