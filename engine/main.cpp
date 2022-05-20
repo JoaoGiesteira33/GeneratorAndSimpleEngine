@@ -575,6 +575,7 @@ void renderScene(){
 
     //Rendering
     renderGroup(rootGroup);
+    
     //End of Frame
     glutSwapBuffers();
 }
@@ -763,7 +764,7 @@ int main(int argc, char **argv){
     //Required callback registry
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);
-    glutIdleFunc(renderScene);
+    //glutIdleFunc(renderScene);
 
     //Callback registration for keyboard processing
 	glutKeyboardFunc(processKeys);
@@ -776,8 +777,8 @@ int main(int argc, char **argv){
         glewInit();
     #endif
     glEnableClientState(GL_VERTEX_ARRAY);
-    //glEnableClientState(GL_NORMAL_ARRAY); DONT FORGET
-    //glEnableClientState(GL_TEXTURE_COORD_ARRAY); TO ENABLE
+    //glEnableClientState(GL_NORMAL_ARRAY);
+    //glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
     //Load 3d files to vertices arrays
     for (int i = 0 ; i < docInfo.models.size() ; i++)
@@ -789,7 +790,7 @@ int main(int argc, char **argv){
     //OpenGL Settings
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     //Enter GLUT's main cycle
     timebase = glutGet(GLUT_ELAPSED_TIME);
