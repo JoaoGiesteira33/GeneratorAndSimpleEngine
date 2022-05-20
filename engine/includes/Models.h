@@ -10,6 +10,7 @@ using std::string;
 
 struct ModelInfo{
     string texture;
+    int texture_id;
     float diffuse[3];
     float ambient[3];
     float specular[3];

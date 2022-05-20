@@ -13,6 +13,7 @@
 #include <string>
 #include <cstdlib>
 #include <algorithm>
+#include <map>
 
 #include <math.h>
 #include <stdio.h>
@@ -37,6 +38,7 @@ using std::ifstream;
 using std::vector;
 using std::stringstream;
 using std::cerr;
+using std::map;
 
 struct XMLInfo{
     //Camera
@@ -44,6 +46,7 @@ struct XMLInfo{
     float fov, near, far;
     //Models
     vector<string> models;
+    map<string, int> textures;
     //Lights
     vector<PointLight> vpntLight;
     vector<DirectionalLight> vdirLight;
@@ -98,6 +101,50 @@ float frame = 0;
 //Mouse values
 GLfloat mousePosX, mousePosY;
 int tracking = 0;
+
+int loadTexture(string s) {
+	unsigned int t,tw,th;
+	unsigned char *texData;
+	unsigned int texID;
+
+	//Iniciar o DevIL
+	ilInit();
+
+	//Colocar origem da textura no canto inferior esquerdo
+	//ilEnable(IL_ORIGIN_SET);
+	//ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
+
+	//Carregar a textura para memória
+	ilGenImages(1,&t);
+	ilBindImage(t);
+	ilLoadImage((ILstring)s.c_str());
+	tw = ilGetInteger(IL_IMAGE_WIDTH);
+	th = ilGetInteger(IL_IMAGE_HEIGHT);
+
+	//Assegurar que a textura se encontra em RGBA
+	//(Red, Green, Blue, Alpha)
+	//com um byte (0 - 255) por componente
+	ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
+	texData = ilGetData();
+
+	//Gerar a textura para a placa gráfica
+	glGenTextures(1,&texID);
+	
+	glBindTexture(GL_TEXTURE_2D,texID);
+	glTexParameteri(GL_TEXTURE_2D,	GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D,	GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D,	GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,	GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		
+	//Upload dos dados de imagem
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return texID;
+}
 
 void renderLight(){
     int id = 0x4000;
@@ -285,6 +332,23 @@ int load_models(Group * group, XMLElement * pList){
         }
 
         ModelInfo newModelInfo = loadModelInfo(pListElement);
+        //Check if group has texture
+        if(newModelInfo.texture.compare("n/a") != 0){
+            cout << "Texture in this model: " << newModelInfo.texture << endl;
+            //Check if texture is loaded/found
+            if(docInfo.textures.count(newModelInfo.texture)){ //Texture is already loaded
+                cout << "Texture in this model already loaded: " << newModelInfo.texture << " : " << docInfo.textures[newModelInfo.texture] << endl;
+                newModelInfo.texture_id = docInfo.textures[newModelInfo.texture];
+            }else{ //Texture is not loaded/found
+                cout << "First time seeing this texture" << endl;
+                //Load Texture
+                newModelInfo.texture_id = rand();//loadTexture(newModelInfo.texture);
+                cout << "Safely loaded texture with id: " << newModelInfo.texture_id << endl;
+                //Save new texture
+                docInfo.textures.insert( {newModelInfo.texture,newModelInfo.texture_id} );
+            }
+        }
+
         group->models_info.push_back(newModelInfo);
 
         //Continuar a iterar
@@ -739,50 +803,6 @@ void processMousePassiveMotion(int x, int y){
             camera_beta = -1.5f;
         glutPostRedisplay();
     }*/
-}
-
-int loadTexture(string s) {
-	unsigned int t,tw,th;
-	unsigned char *texData;
-	unsigned int texID;
-
-	//Iniciar o DevIL
-	ilInit();
-
-	//Colocar origem da textura no canto inferior esquerdo
-	ilEnable(IL_ORIGIN_SET);
-	ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
-
-	//Carregar a textura para memória
-	ilGenImages(1,&t);
-	ilBindImage(t);
-	ilLoadImage((ILstring)s.c_str());
-	tw = ilGetInteger(IL_IMAGE_WIDTH);
-	th = ilGetInteger(IL_IMAGE_HEIGHT);
-
-	//Assegurar que a textura se encontra em RGBA
-	//(Red, Green, Blue, Alpha)
-	//com um byte (0 - 255) por componente
-	ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
-	texData = ilGetData();
-
-	//Gerar a textura para a placa gráfica
-	glGenTextures(1,&texID);
-	
-	glBindTexture(GL_TEXTURE_2D,texID);
-	glTexParameteri(GL_TEXTURE_2D,	GL_TEXTURE_WRAP_S,		GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D,	GL_TEXTURE_WRAP_T,		GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D,	GL_TEXTURE_MAG_FILTER,   	GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D,	GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		
-	//Upload dos dados de imagem
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData);
-	glGenerateMipmap(GL_TEXTURE_2D);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	return texID;
 }
 
 int main(int argc, char **argv){
