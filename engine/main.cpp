@@ -22,6 +22,7 @@
 #include "tinyxml2.h"
 #include "TimeBasedTransformations.h"
 #include "Lights.h"
+#include "Models.h"
 
 #ifndef XMLCheckResult
 	#define XMLCheckResult(a_eResult) if (a_eResult != XML_SUCCESS) { printf("Error: %i\n", a_eResult); return a_eResult; }
@@ -575,7 +576,7 @@ void renderScene(){
 
     //Rendering
     renderGroup(rootGroup);
-    
+
     //End of Frame
     glutSwapBuffers();
 }
