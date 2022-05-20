@@ -21,6 +21,7 @@
 #include "Vectors.h"
 #include "tinyxml2.h"
 #include "TimeBasedTransformations.h"
+#include "Lights.h"
 
 #ifndef XMLCheckResult
 	#define XMLCheckResult(a_eResult) if (a_eResult != XML_SUCCESS) { printf("Error: %i\n", a_eResult); return a_eResult; }
@@ -36,9 +37,15 @@ using std::stringstream;
 using std::cerr;
 
 struct XMLInfo{
+    //Camera
     float cameraInfo[3][3];
     float fov, near, far;
-    vector<string> models; //Models to be loaded
+    //Models
+    vector<string> models;
+    //Lights
+    vector<PointLight> vpntLight;
+    vector<DirectionalLight> vdirLight;
+    vector<SpotlightLight> vsptlLight;
 };
 
 struct TimeDependentTranslate{
@@ -88,6 +95,29 @@ float frame = 0;
 //Mouse values
 GLfloat mousePosX, mousePosY;
 int tracking = 0;
+
+void renderLight(){
+    int id = 0x4000;
+    for(int i = 0 ; i < docInfo.vpntLight.size() ; i++){
+        PointLight aux = docInfo.vpntLight[i];
+        GLfloat position[] = { aux.posX, aux.posY, aux.posZ, 1.0 }; //W=1 -> Point Light
+        glLightfv(id + aux.lightNumber, GL_POSITION, position);
+    }
+    for(int i = 0 ; i < docInfo.vdirLight.size() ; i++){
+        DirectionalLight aux = docInfo.vdirLight[i];
+        GLfloat position[] = { aux.dirX, aux.dirY, aux.dirZ, 0.0 }; //W=0 -> Directional Light
+        glLightfv(id + aux.lightNumber, GL_POSITION, position);
+    }
+    for(int i = 0 ; i < docInfo.vsptlLight.size() ; i++){
+        SpotlightLight aux = docInfo.vsptlLight[i];
+        GLfloat position[] = { aux.posX, aux.posY, aux.posZ, 1.0 }; //W=1 -> Point Light acting as Spotlight
+        GLfloat spot_direction[] = { aux.dirX, aux.dirY, aux.dirZ};
+        GLfloat spot_cutoff[] = {aux.cutOff};
+        glLightfv(id + aux.lightNumber, GL_POSITION, position);
+        glLightfv(id + aux.lightNumber, GL_SPOT_CUTOFF, spot_cutoff);
+        glLightfv(id + aux.lightNumber, GL_SPOT_DIRECTION, spot_direction);
+    }
+}
 
 void renderCatmullRomCurve(float **points, int point_count) {
 	float point[3];
@@ -370,6 +400,39 @@ Group* load_group(XMLElement * pList){
     return retGroup;
 }
 
+int loadLights(XMLElement * pElement){
+    glEnable(GL_LIGHTING); //Turn lighting on
+    glEnable(GL_RESCALE_NORMAL);
+    float amb[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, amb);
+
+    XMLElement * light = pElement->FirstChildElement();
+    int light_number = 0;
+    int light_id = 0x4000;
+
+    while(light != nullptr && light_number < 8){
+        if ( light->Attribute( "type", "point" ) ){
+            PointLight newLight = loadPointLight(light,light_number);
+            docInfo.vpntLight.push_back(newLight);
+        } else if ( light->Attribute( "type", "directional" ) ){
+            DirectionalLight newLight = loadDirectionalLight(light,light_number);
+            docInfo.vdirLight.push_back(newLight);
+        }
+        else if ( light->Attribute( "type", "spotlight" ) ){
+            SpotlightLight newLight = loadSpotlightLight(light,light_number);
+            docInfo.vsptlLight.push_back(newLight);
+        }
+
+        glEnable(light_id);
+
+        light = light->NextSiblingElement();
+        light_number++;
+        light_id++;
+    }
+
+    return 0;
+}
+
 int loadFileInfo(XMLNode * pRoot){
     XMLError eResult;
     //Load Camera Position Info
@@ -403,6 +466,11 @@ int loadFileInfo(XMLNode * pRoot){
     eResult = pElement->QueryFloatAttribute("fov",&docInfo.fov);
     eResult = pElement->QueryFloatAttribute("near",&docInfo.near);
     eResult = pElement->QueryFloatAttribute("far",&docInfo.far);
+
+    //Load Lights
+    pElement = pRoot->FirstChildElement("lights");
+    if (pElement == nullptr) return XML_ERROR_PARSING_ELEMENT;
+    loadLights(pElement);
 
     //Load Groups
     pElement = pRoot->FirstChildElement("group");
@@ -502,13 +570,14 @@ void renderScene(){
         sprintf(buffer, "FPS: %f", fps);
         glutSetWindowTitle(buffer);
     }
+    //Lights
+    renderLight();
 
     //Rendering
     renderGroup(rootGroup);
     //End of Frame
     glutSwapBuffers();
 }
-
 
 void walkFront(){
     camera_x -= 7.77f * camera_dx;
@@ -707,6 +776,8 @@ int main(int argc, char **argv){
         glewInit();
     #endif
     glEnableClientState(GL_VERTEX_ARRAY);
+    //glEnableClientState(GL_NORMAL_ARRAY); DONT FORGET
+    //glEnableClientState(GL_TEXTURE_COORD_ARRAY); TO ENABLE
 
     //Load 3d files to vertices arrays
     for (int i = 0 ; i < docInfo.models.size() ; i++)
