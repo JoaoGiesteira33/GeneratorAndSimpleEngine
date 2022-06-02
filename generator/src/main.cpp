@@ -151,6 +151,23 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
     }
 }
 
+Point getVector(Point v1, Point v2){
+    return new_point(v2->x - v1->x,
+                     v2->y - v1->y,
+                     v2->z - v1->z);
+}
+
+Point normalizeVector(Point& vec){
+    float length = sqrt( vec->x * vec->x +
+                         vec->y * vec->y +
+                         vec->z * vec->z);
+    if (length == 0.0f)
+        length =  1.0f;
+    vec->x /= length;
+    vec->x /= length;
+    vec->x /= length;
+}
+
 void gen_bezier(char** args){
     
     std::ifstream infile;
@@ -238,6 +255,8 @@ int gen_sphere(char** args){
     float ang_stack = M_PI / stacks;
 	float ang_slice = (2 * (float)M_PI) / (float)slices;
 
+    Point center = new_point(0.0f, 0.0f, 0.0f); // ?????
+
 	for(int i = 0 ; i < slices ; i++){ //Iterate Slices
 		float alpha = (float)i * ang_slice;
 		float next_alpha = (float)(i+1) * ang_slice;
@@ -258,28 +277,51 @@ int gen_sphere(char** args){
 			float x_1 = radius * cosBeta * sinAlpha;
 			float y_1 = radius * sinBeta;
 			float z_1 = radius * cosBeta * cosAlpha;
+            Point p1 = new_point(x_1, y_1, z_1);
+            Point n1 = getVector(center, p1);
+            normalizeVector(n1);
+
 			//Point 2 Coords
 			float x_2 = radius * nextCosBeta * nextSinAlpha;
 			float y_2 = radius * nextSinBeta;
 			float z_2 = radius * nextCosBeta * nextCosAlpha;
+            Point p2 = new_point(x_2, y_2, z_2);
+            Point n2 = getVector(center, p2);
+            normalizeVector(n2);
+
 			//Point 3 Coords
 			float x_3 = radius * nextCosBeta * sinAlpha;
 			float y_3 = radius * nextSinBeta;
 			float z_3 = radius * nextCosBeta * cosAlpha;
+            Point p3 = new_point(x_3, y_3, z_3);
+            Point n3 = getVector(center, p3);
+            normalizeVector(n3);
+
 			//Point 4 Coords
 			float x_4 = radius * cosBeta * nextSinAlpha;
 			float y_4 = radius * sinBeta;
 			float z_4 = radius * cosBeta * nextCosAlpha;
-            
-			write_point(x_1,y_1,z_1,file);
-			write_point(x_2,y_2,z_2,file);
-			write_point(x_3,y_3,z_3,file);
+            Point p4 = new_point(x_4, y_4, z_4);
+            Point n4 = getVector(center, p4);
+            normalizeVector(n4);
+
+			write_point(p1,file);
+			write_point(p2,file);
+			write_point(p3,file);
+            write_point(n1,file);
+			write_point(n2,file);
+			write_point(n3,file);
             file<<std::endl;
 
-			write_point(x_1,y_1,z_1,file);
-			write_point(x_4,y_4,z_4,file);
-			write_point(x_2,y_2,z_2,file);
+			write_point(p1,file);
+			write_point(p4,file);
+			write_point(p2,file);
+            write_point(n1,file);
+			write_point(n4,file);
+			write_point(n2,file);
             file<<std::endl;
+
+            free(p1);free(p2);free(p3);free(p4);free(n1);free(n2);free(n3);free(n4);
 		}
 	}
 
