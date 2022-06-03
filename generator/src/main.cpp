@@ -34,12 +34,12 @@ Point getVector(Point v1, Point v2){
                      v2->z - v1->z);
 }
 
-Point normalizeVector(Point& vec){
+void normalizeVector(Point& vec){
     float length = sqrt( vec->x * vec->x +
                          vec->y * vec->y +
                          vec->z * vec->z);
     if (length == 0.0f)
-        length =  1.0f;
+        length = 1.0f;
     vec->x /= length;
     vec->y /= length;
     vec->z /= length;
@@ -52,8 +52,20 @@ Point normal_vector_4p(Point p1, Point p2, Point p3, Point p4){
                        v1->z*v2->x - v1->x*v2->z,
                        v1->x*v2->y - v1->y*v2->x);
 
-    n = normalizeVector(n);
+    normalizeVector(n);
 
+    return n;
+}
+
+Point normal_vector_3p(Point left, Point middle, Point right){
+
+    Point v1 = getVector(middle,left);
+    Point v2 = getVector(middle,right);
+    Point n =new_point(v1->y*v2->z - v1->z*v2->y,
+                       v1->z*v2->x - v1->x*v2->z,
+                       v1->x*v2->y - v1->y*v2->x);
+    normalizeVector(n);
+    free(v1);free(v2);
     return n;
 }
 
@@ -650,18 +662,32 @@ void generate_cone(float radius, float height, int slices , float stacks, std::o
             float newc1 = newR*cos(i*alpha);
             float newc2 = newR*cos((i+1)*alpha);
 
-            write_point(s1, yratio*j, c1, file);
-            write_point(s2, yratio*j, c2, file);
-            write_point(news1, yratio*(j+1), newc1, file);
-            // FALTA AS 3 NORMAIS
+            Point p1 = new_point(s1, yratio*j, c1);
+            Point p2 = new_point(s2, yratio*j, c2);
+            Point p3 = new_point(news1, yratio*(j+1), newc1);
+            Point n1 = normal_vector_3p(p1, p2, p3);
+            write_point(p1, file);
+            write_point(p2, file);
+            write_point(p3, file);
+            write_point(n1, file);
+            write_point(n1, file);
+            write_point(n1, file);
+            free(p1);free(p2);free(p3);free(n1);
 
             file<<std::endl;
 
             if(j+1<stacks){
-                write_point(news2, yratio*(j+1), newc2, file);
-                write_point(news1, yratio*(j+1), newc1, file);
-                write_point(s2, yratio*j, c2, file);
-                //FALATA AS 3 NORMAIS
+                Point p1 = new_point(news2, yratio*(j+1), newc2);
+                Point p2 = new_point(news1, yratio*(j+1), newc1);
+                Point p3 = new_point(s2, yratio*j, c2);
+                Point n1 = normal_vector_3p(p1, p2, p3);
+                write_point(p1, file);
+                write_point(p2, file);
+                write_point(p3, file);
+                write_point(n1, file);
+                write_point(n1, file);
+                write_point(n1, file);
+                free(p1);free(p2);free(p3);free(n1);
                 file<<std::endl;
             }
             s1=news1;
