@@ -16,25 +16,43 @@ typedef struct point{
     float z;
 }*Point;
 
+Point new_point(float x, float y, float z) {
+    Point p = (Point) (malloc(sizeof(struct point)));
+    p->x = x; p->y = y; p->z = z;
+    return p;
+}
+
 void write_point(float x, float y, float z, std::ofstream& file){
     file << std::to_string(x) << " "
          << std::to_string(y) << " "
          << std::to_string(z) << " ";
 }
 
+Point getVector(Point v1, Point v2){
+    return new_point(v2->x - v1->x,
+                     v2->y - v1->y,
+                     v2->z - v1->z);
+}
+
+Point normalizeVector(Point& vec){
+    float length = sqrt( vec->x * vec->x +
+                         vec->y * vec->y +
+                         vec->z * vec->z);
+    if (length == 0.0f)
+        length =  1.0f;
+    vec->x /= length;
+    vec->y /= length;
+    vec->z /= length;
+}
 Point normal_vector_4p(Point p1, Point p2, Point p3, Point p4){
 
-    Point v1 = new_point(p2->x - p1->x, p2->y - p1->y, p2->z - p1->z);
-    Point v2 = new_point(p4->x - p3->x, p4->y - p3->y, p4->z - p3->z);
+    Point v1 = getVector(p1,p2);
+    Point v2 = getVector(p3,p4);
     Point n =new_point(v1->y*v2->z - v1->z*v2->y,
                        v1->z*v2->x - v1->x*v2->z,
                        v1->x*v2->y - v1->y*v2->x);
 
-    float norma = sqrt( pow(n->x,2) + pow(n->y,2) + pow(n->z,2));
-    
-    n->x /= norma;
-    n->y /= norma;
-    n->z /= norma;
+    n = normalizeVector(n);
 
     return n;
 }
@@ -169,22 +187,6 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
     }
 }
 
-Point getVector(Point v1, Point v2){
-    return new_point(v2->x - v1->x,
-                     v2->y - v1->y,
-                     v2->z - v1->z);
-}
-
-Point normalizeVector(Point& vec){
-    float length = sqrt( vec->x * vec->x +
-                         vec->y * vec->y +
-                         vec->z * vec->z);
-    if (length == 0.0f)
-        length =  1.0f;
-    vec->x /= length;
-    vec->x /= length;
-    vec->x /= length;
-}
 
 void gen_bezier(char** args){
     
@@ -699,14 +701,16 @@ int check_args(int n, char **args){
         if(!args[i] || !*args[i]) return 0;
     return 1;
 }
-Point new_point(float x, float y, float z) {
-    Point p = (Point) (malloc(sizeof(struct point)));
-    p->x = x; p->y = y; p->z = z;
-    return p;
-}
+
 
 int main(int argc, char **argv) {
-    Point p = normal_vector_4p()
+    /*
+    Point p1 = new_point(0,0,0);
+    Point p3 = new_point(1,0,0);
+    Point p4 = new_point(0,0,1);
+    Point p2 = new_point(1,0,1);
+    Point p = normal_vector_4p(p1,p2,p3,p4);
+    std::cout<<p->x<<", "<<p->y<<", "<<p->z;*/
 
     if(!argv[1] || !*argv[1]){
         std::cout<<"Invalid input"<<std::endl;
