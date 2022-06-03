@@ -77,6 +77,7 @@ XMLInfo docInfo;
 Group* rootGroup;
 vector<GLuint> vertices;
 vector<GLuint> verticeCount;
+vector<GLuint> normals;
 
 //Camera Values
 int camera_mode = 0;
@@ -147,25 +148,27 @@ int loadTexture(string s) {
 }
 
 void renderLight(){
-    int id = 0x4000;
     for(int i = 0 ; i < docInfo.vpntLight.size() ; i++){
         PointLight aux = docInfo.vpntLight[i];
         GLfloat position[] = { aux.posX, aux.posY, aux.posZ, 1.0 }; //W=1 -> Point Light
-        glLightfv(id + aux.lightNumber, GL_POSITION, position);
+        glEnable(GL_LIGHT0 + aux.lightNumber);
+        glLightfv(GL_LIGHT0 + aux.lightNumber, GL_POSITION, position);
     }
     for(int i = 0 ; i < docInfo.vdirLight.size() ; i++){
         DirectionalLight aux = docInfo.vdirLight[i];
         GLfloat position[] = { aux.dirX, aux.dirY, aux.dirZ, 0.0 }; //W=0 -> Directional Light
-        glLightfv(id + aux.lightNumber, GL_POSITION, position);
+        glEnable(GL_LIGHT0 + aux.lightNumber);
+        glLightfv(GL_LIGHT0 + aux.lightNumber, GL_POSITION, position);
     }
     for(int i = 0 ; i < docInfo.vsptlLight.size() ; i++){
         SpotlightLight aux = docInfo.vsptlLight[i];
         GLfloat position[] = { aux.posX, aux.posY, aux.posZ, 1.0 }; //W=1 -> Point Light acting as Spotlight
         GLfloat spot_direction[] = { aux.dirX, aux.dirY, aux.dirZ};
         GLfloat spot_cutoff[] = {aux.cutOff};
-        glLightfv(id + aux.lightNumber, GL_POSITION, position);
-        glLightfv(id + aux.lightNumber, GL_SPOT_CUTOFF, spot_cutoff);
-        glLightfv(id + aux.lightNumber, GL_SPOT_DIRECTION, spot_direction);
+        glEnable(GL_LIGHT0 + aux.lightNumber);
+        glLightfv(GL_LIGHT0 + aux.lightNumber, GL_POSITION, position);
+        glLightfv(GL_LIGHT0 + aux.lightNumber, GL_SPOT_CUTOFF, spot_cutoff);
+        glLightfv(GL_LIGHT0 + aux.lightNumber, GL_SPOT_DIRECTION, spot_direction);
     }
 }
 
@@ -269,6 +272,7 @@ void orbitalCamera(){
 //Carrega informação sobre vértices num ficheiro para o programa
 void prepareData(const int ind, const char *file_name){
     vector<float> points;
+    vector<float> v_normals;
     string line;
     ifstream myfile(file_name);
     GLfloat aux;
@@ -282,10 +286,18 @@ void prepareData(const int ind, const char *file_name){
       while ( getline(myfile,line) )
       {
         stringstream ss(line);
+        //Ler linha de 3 pontos
         for(int i=0 ; i<9 ; i++)
         {
             ss >> aux;
+            cout << aux << " ";
             points.push_back(aux);
+        }
+        //Ler linha de 3 normais
+        for(int i=0 ; i<9 ; i++){
+            ss >> aux;
+            cout << aux << " ";
+            v_normals.push_back(aux);
         }
       }
       myfile.close();
@@ -294,18 +306,26 @@ void prepareData(const int ind, const char *file_name){
     verticeCount.push_back(points.size()/3);
 
     //Criar o VBO
-    //cout << "Indice in here is: " << ind << endl;
+    cout << "Indice in here is: " << ind << endl;
     GLint value = ind + 1;
     vertices.push_back(value);
-
-    //glGenBuffers(value,&vertices.at(ind));
-    //cout << "Value: " << value << endl; 
+    normals.push_back(value);
+    glGenBuffers(1,&vertices.at(ind));
+    cout << "Value: " << value << endl; 
     glBindBuffer(GL_ARRAY_BUFFER, vertices[ind]);
     glBufferData(GL_ARRAY_BUFFER,
-                 sizeof(float) * points.size(),
+                sizeof(float) * points.size(),
                 points.data(),
                 GL_STATIC_DRAW);
-    //cout << "Added => Vertices: " << vertices[ind] << " | VerticesCount: " << verticeCount[ind] << endl;
+    cout << "Added => Vertices: " << vertices[ind] << " | VerticesCount: " << verticeCount[ind] << endl;
+    
+    glGenBuffers(1, &normals.at(ind));
+    glBindBuffer(GL_ARRAY_BUFFER, normals[ind]);
+	glBufferData(GL_ARRAY_BUFFER,
+                sizeof(float) * v_normals.size(),
+                v_normals.data(),GL_STATIC_DRAW);
+
+    cout << "Added => Normals: " << normals[ind] << " | VerticesCount: " << verticeCount[ind] << endl;
 }
 
 int load_models(Group * group, XMLElement * pList){
@@ -330,7 +350,6 @@ int load_models(Group * group, XMLElement * pList){
             (group->models_indices).push_back(docInfo.models.size());
             docInfo.models.push_back(newModelFile);
         }
-
         ModelInfo newModelInfo = loadModelInfo(pListElement);
         //Check if group has texture
         if(newModelInfo.texture.compare("n/a") != 0){
@@ -471,14 +490,12 @@ Group* load_group(XMLElement * pList){
 }
 
 int loadLights(XMLElement * pElement){
-    glEnable(GL_LIGHTING); //Turn lighting on
-    glEnable(GL_RESCALE_NORMAL);
-    float amb[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, amb);
+    //glEnable(GL_RESCALE_NORMAL);
+    //float amb[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, amb);
 
     XMLElement * light = pElement->FirstChildElement();
     int light_number = 0;
-    int light_id = 0x4000;
 
     while(light != nullptr && light_number < 8){
         if ( light->Attribute( "type", "point" ) ){
@@ -493,11 +510,8 @@ int loadLights(XMLElement * pElement){
             docInfo.vsptlLight.push_back(newLight);
         }
 
-        glEnable(light_id);
-
         light = light->NextSiblingElement();
         light_number++;
-        light_id++;
     }
 
     return 0;
@@ -603,8 +617,27 @@ void renderGroup(Group * g){
         cout << "Ambient: " << mi.ambient[0] << " | " << mi.ambient[1] << " | " << mi.ambient[2] << endl;
         cout << "Specular: " << mi.specular[0] << " | " << mi.specular[1] << " | " << mi.specular[2] << endl;
         cout << "Emissive: " << mi.emissive[0] << " | " << mi.emissive[1] << " | " << mi.emissive[2] << endl;
+        
+        GLfloat materialDiffuse[] = {mi.diffuse[0],mi.diffuse[1],mi.diffuse[2],1.0};
+	    GLfloat materialAmbient[] = {mi.ambient[0],mi.ambient[1],mi.ambient[2],1.0};
+	    GLfloat materialSpecular[] = {mi.specular[0],mi.specular[1],mi.specular[2],1.0};
+	    GLfloat materialEmissive[] = {mi.emissive[0],mi.emissive[1],mi.emissive[2],1.0};
+	    GLfloat materialShininess[] = {mi.shininess};
+
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, materialDiffuse);
+	    glMaterialfv(GL_FRONT, GL_AMBIENT, materialAmbient);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, materialSpecular);
+	    glMaterialfv(GL_FRONT, GL_EMISSION, materialEmissive);
+        glMaterialfv(GL_FRONT, GL_SHININESS, materialShininess);
+
+        cout << "Vertices indice is: " << vertices[ind] << endl;
         glBindBuffer(GL_ARRAY_BUFFER,vertices[ind]);
         glVertexPointer(3,GL_FLOAT,0,0);
+
+        cout << "Normals indice is: " << normals[ind] << endl;
+        glBindBuffer(GL_ARRAY_BUFFER,normals[ind]);
+	    glNormalPointer(GL_FLOAT,0,0);
+
         glDrawArrays(GL_TRIANGLES,0,verticeCount[ind]);
     }
     
@@ -619,6 +652,7 @@ void renderGroup(Group * g){
 
 void renderScene(){
     //Clear Buffers
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     //Set The Camera
@@ -851,27 +885,28 @@ int main(int argc, char **argv){
     #ifndef __APPLE__
         glewInit();
     #endif
+
+    //OpenGL Settings
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    
     glEnableClientState(GL_VERTEX_ARRAY);
-    //glEnableClientState(GL_NORMAL_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
     //glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glEnable(GL_LIGHTING);
 
     //Load 3d files to vertices arrays
+    cout << "Starting to prepare data\n";
     for (int i = 0 ; i < docInfo.models.size() ; i++)
     {
         const char * aux = docInfo.models[i].c_str();
         prepareData(i,aux);
     }
 
-    //OpenGL Settings
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
     //Enter GLUT's main cycle
     timebase = glutGet(GLUT_ELAPSED_TIME);
-
     printInfo();
-
     glutMainLoop();
 
     return 0;
