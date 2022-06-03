@@ -57,6 +57,7 @@ Point normal_vector_4p(Point p1, Point p2, Point p3, Point p4){
     return n;
 }
 
+
 Point normal_vector_3p(Point left, Point middle, Point right){
 
     Point v1 = getVector(middle,left);
@@ -67,6 +68,20 @@ Point normal_vector_3p(Point left, Point middle, Point right){
     normalizeVector(n);
     free(v1);free(v2);
     return n;
+}
+
+
+Point normal_at_point_torus(float x, float y, float z, float radius){
+    Point p0 = new_point(x,0,z); //ponto projetado com y=0 que é a altura do meio do torus
+
+    normalizeVector(p0); //norma 1
+
+    p0->x*=radius;// multiplicamos pelo raio para ficar na circunferencia central
+    p0->y*=radius;
+    p0->z*=radius;
+
+    //std::cout<<"Raio: "<<p0->z<<", "<<p0->y<<", "<<p0->z<<"\n";
+    return p0;
 }
 
 
@@ -213,6 +228,7 @@ void gen_bezier(char** args){
 }
 
 void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float tubeRadius, std::ofstream& file){
+    std::cout<<"Main radius: "<<mainRadius<<"\n";
 	float phiAngleStep = (2 * (float)M_PI) / float(mainSegments);
 	float thetaAngleStep = (2 * (float)M_PI) / float(tubeSegments);
 	float currentPhi = 0.0f;
@@ -234,18 +250,37 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
 			float x_1 = (mainRadius + tubeRadius * cosTheta) * cosPhi;
 			float y_1 = (mainRadius + tubeRadius * cosTheta) * sinPhi;
 			float z_1 = tubeRadius * sinTheta;
+            Point center1 = normal_at_point_torus(x_1,y_1,z_1,mainRadius); //calcula o ponto no raio interno do torus que intercecionava a projeção do ponto em y=0 e essa circunferencia 
+            Point p1 = new_point(x_1,y_1,z_1); 
+            Point n1 = getVector(center1,p1); //vetor    
+            normalizeVector(n1);
+            
 			//Point 2 Coords
 			float x_2 = (mainRadius + tubeRadius * nextCosTheta) * nextCosPhi;
 			float y_2 = (mainRadius + tubeRadius * nextCosTheta) * nextSinPhi;
 			float z_2 = tubeRadius * nextSinTheta;
+            Point center2 = normal_at_point_torus(x_2,y_2,z_2,mainRadius);
+            Point p2 = new_point(x_2,y_2,z_2);
+            Point n2 = getVector(center2,p2);
+            normalizeVector(n2);
+
 			//Point 3 Coords
 			float x_3 = (mainRadius + tubeRadius * nextCosTheta) * cosPhi;
 			float y_3 = (mainRadius + tubeRadius * nextCosTheta) * sinPhi;
 			float z_3 = tubeRadius * nextSinTheta;
+            Point center3 = normal_at_point_torus(x_3,y_3,z_3,mainRadius);
+            Point p3 = new_point(x_3,y_3,z_3);
+            Point n3 = getVector(center3,p3);
+            normalizeVector(n3);
+
 			//Point 4 Coords
 			float x_4 = (mainRadius + tubeRadius * cosTheta) * nextCosPhi;
 			float y_4 = (mainRadius + tubeRadius * cosTheta) * nextSinPhi;
 			float z_4 = tubeRadius * sinTheta;
+            Point center4 = normal_at_point_torus(x_4,y_4,z_4,mainRadius);
+            Point p4 = new_point(x_4,y_4,z_4);
+            Point n4 = getVector(center4,p4);
+            normalizeVector(n4);
 
 			write_point(x_1,y_1,z_1,file);
 			write_point(x_2,y_2,z_2,file);
