@@ -385,18 +385,30 @@ void box_front_back(float size, int grid, float sub_size, std::ofstream& file){
             write_point(p1x,p1y,p1z,file);
             write_point(p2x,p2y,p2z,file);
             write_point(p3x,p3y,p3z,file);
+            write_point(0.0f, 0.0f, -1.0f, file);
+            write_point(0.0f, 0.0f, -1.0f, file);
+            write_point(0.0f, 0.0f, -1.0f, file);
             file<<std::endl;
             write_point(p4x,p4y,p4z,file);
             write_point(p5x,p5y,p5z,file);
             write_point(p6x,p6y,p6z,file);
+            write_point(0.0f, 0.0f, -1.0f, file);
+            write_point(0.0f, 0.0f, -1.0f, file);
+            write_point(0.0f, 0.0f, -1.0f, file);
             file<<std::endl;
             write_point(p7x,p7y,p7z,file);
             write_point(p8x,p8y,p8z,file);
             write_point(p9x,p9y,p9z,file);
+            write_point(0.0f, 0.0f, 1.0f, file);
+            write_point(0.0f, 0.0f, 1.0f, file);
+            write_point(0.0f, 0.0f, 1.0f, file);
             file<<std::endl;
             write_point(p10x,p10y,p10z,file);
             write_point(p11x,p11y,p11z,file);
             write_point(p12x,p12y,p12z,file);
+            write_point(0.0f, 0.0f, 1.0f, file);
+            write_point(0.0f, 0.0f, 1.0f, file);
+            write_point(0.0f, 0.0f, 1.0f, file);
             file<<std::endl;
 
         }
@@ -459,18 +471,30 @@ void box_left_right(float size, int grid, float sub_size, std::ofstream& file){
             write_point(p1x,p1y,p1z,file);
             write_point(p2x,p2y,p2z,file);
             write_point(p3x,p3y,p3z,file);
+            write_point(-1.0f, 0.0f, 0.0f, file);
+            write_point(-1.0f, 0.0f, 0.0f, file);
+            write_point(-1.0f, 0.0f, 0.0f, file);
             file<<std::endl;
             write_point(p4x,p4y,p4z,file);
             write_point(p5x,p5y,p5z,file);
             write_point(p6x,p6y,p6z,file);
+            write_point(-1.0f, 0.0f, 0.0f, file);
+            write_point(-1.0f, 0.0f, 0.0f, file);
+            write_point(-1.0f, 0.0f, 0.0f, file);
             file<<std::endl;
             write_point(p7x,p7y,p7z,file);
             write_point(p8x,p8y,p8z,file);
             write_point(p9x,p9y,p9z,file);
+            write_point(1.0f, 0.0f, 0.0f, file);
+            write_point(1.0f, 0.0f, 0.0f, file);
+            write_point(1.0f, 0.0f, 0.0f, file);
             file<<std::endl;
             write_point(p10x,p10y,p10z,file);
             write_point(p11x,p11y,p11z,file);
             write_point(p12x,p12y,p12z,file);
+            write_point(1.0f, 0.0f, 0.0f, file);
+            write_point(1.0f, 0.0f, 0.0f, file);
+            write_point(1.0f, 0.0f, 0.0f, file);
             file<<std::endl;
         }
     }
@@ -533,18 +557,30 @@ void box_top_bottom(float size, int grid, float sub_size, std::ofstream& file){
             write_point(p1x,p1y,p1z,file);
             write_point(p2x,p2y,p2z,file);
             write_point(p3x,p3y,p3z,file);
+            write_point(0.0f, -1.0f, 0.0f, file);
+            write_point(0.0f, -1.0f, 0.0f, file);
+            write_point(0.0f, -1.0f, 0.0f, file);
             file<<std::endl;
             write_point(p4x,p4y,p4z,file);
             write_point(p5x,p5y,p5z,file);
             write_point(p6x,p6y,p6z,file);
+            write_point(0.0f, -1.0f, 0.0f, file);
+            write_point(0.0f, -1.0f, 0.0f, file);
+            write_point(0.0f, -1.0f, 0.0f, file);
             file<<std::endl;
             write_point(p7x,p7y,p7z,file);
             write_point(p8x,p8y,p8z,file);
             write_point(p9x,p9y,p9z,file);
+            write_point(0.0f, 1.0f, 0.0f, file);
+            write_point(0.0f, 1.0f, 0.0f, file);
+            write_point(0.0f, 1.0f, 0.0f, file);
             file<<std::endl;
             write_point(p10x,p10y,p10z,file);
             write_point(p11x,p11y,p11z,file);
             write_point(p12x,p12y,p12z,file);
+            write_point(0.0f, 1.0f, 0.0f, file);
+            write_point(0.0f, 1.0f, 0.0f, file);
+            write_point(0.0f, 1.0f, 0.0f, file);
             file<<std::endl;
         }
     }
@@ -577,10 +613,12 @@ void generate_cone(float radius, float height, int slices , float stacks, std::o
         float c1 = radius*cos(i*alpha);
         float c2 = radius*cos((i+1)*alpha);
 
-
         write_point(s2, 0, c2, file);
         write_point(s1, 0, c1, file);
         write_point(0, 0, 0, file);
+        write_point(0, -1, 0, file);
+        write_point(0, -1, 0, file);
+        write_point(0, -1, 0, file);
         file<<std::endl;
 
         for(int jaux=0;(float)jaux<stacks;jaux++){
@@ -595,12 +633,15 @@ void generate_cone(float radius, float height, int slices , float stacks, std::o
             write_point(s1, yratio*j, c1, file);
             write_point(s2, yratio*j, c2, file);
             write_point(news1, yratio*(j+1), newc1, file);
+            // FALTA AS 3 NORMAIS
+
             file<<std::endl;
 
             if(j+1<stacks){
                 write_point(news2, yratio*(j+1), newc2, file);
                 write_point(news1, yratio*(j+1), newc1, file);
                 write_point(s2, yratio*j, c2, file);
+                //FALATA AS 3 NORMAIS
                 file<<std::endl;
             }
             s1=news1;
@@ -664,10 +705,16 @@ int gen_plane(char** args){
             write_point(p1x,p1y,p1z,file);
             write_point(p2x,p2y,p2z,file);
             write_point(p3x,p3y,p3z,file);
+            write_point(0.0f,1.0f,0.0f,file);
+            write_point(0.0f,1.0f,0.0f,file);
+            write_point(0.0f,1.0f,0.0f,file);
             file<<std::endl;
             write_point(p4x,p4y,p4z,file);
             write_point(p5x,p5y,p5z,file);
             write_point(p6x,p6y,p6z,file);
+            write_point(0.0f,1.0f,0.0f,file);
+            write_point(0.0f,1.0f,0.0f,file);
+            write_point(0.0f,1.0f,0.0f,file);
             file<<std::endl;
         }
     }
