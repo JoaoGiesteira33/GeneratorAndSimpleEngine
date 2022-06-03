@@ -24,24 +24,14 @@ void write_point(float x, float y, float z, std::ofstream& file){
 
 Point normal_vector_4p(Point p1, Point p2, Point p3, Point p4){
 
-    Point v1 =(Point)malloc(sizeof(float)*3);
-    Point v2 =(Point)malloc(sizeof(float)*3);
-    Point n =(Point)malloc(sizeof(float)*3);
-
-    v1->x = p2->x - p1->x;
-    v1->y = p2->y - p1->y;
-    v1->z = p2->z - p1->z;
-
-    v2->x = p4->x - p3->x;
-    v2->y = p4->y - p3->y;
-    v2->z = p4->z - p3->z;
-
-    n->x = v1->y*v2->z - v1->z*v2->y;
-    n->y = v1->z*v2->x - v1->x*v2->z;
-    n->z = v1->x*v2->y - v1->y*v2->x;
+    Point v1 = new_point(p2->x - p1->x, p2->y - p1->y, p2->z - p1->z);
+    Point v2 = new_point(p4->x - p3->x, p4->y - p3->y, p4->z - p3->z);
+    Point n =new_point(v1->y*v2->z - v1->z*v2->y,
+                       v1->z*v2->x - v1->x*v2->z,
+                       v1->x*v2->y - v1->y*v2->x);
 
     float norma = sqrt( pow(n->x,2) + pow(n->y,2) + pow(n->z,2));
-
+    
     n->x /= norma;
     n->y /= norma;
     n->z /= norma;
@@ -716,7 +706,8 @@ Point new_point(float x, float y, float z) {
 }
 
 int main(int argc, char **argv) {
-    //bezier_patch("../build/teapot.patch",10);
+    Point p = normal_vector_4p()
+
     if(!argv[1] || !*argv[1]){
         std::cout<<"Invalid input"<<std::endl;
         return 1;
