@@ -53,7 +53,7 @@ Point normal_vector_4p(Point p1, Point p2, Point p3, Point p4){
                        v1->x*v2->y - v1->y*v2->x);
 
     normalizeVector(n);
-
+    free(v1);free(v2);
     return n;
 }
 
@@ -285,12 +285,23 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
 			write_point(x_1,y_1,z_1,file);
 			write_point(x_2,y_2,z_2,file);
 			write_point(x_3,y_3,z_3,file);
+            write_point(n1, file);
+            write_point(n2, file);
+            write_point(n3, file);
             file<<std::endl;
 
 			write_point(x_1,y_1,z_1,file);
 			write_point(x_4,y_4,z_4,file);
 			write_point(x_2,y_2,z_2,file);
+            write_point(n1, file);
+            write_point(n4, file);
+            write_point(n2, file);
             file<<std::endl;
+
+            free(center1);free(p1);free(n1);
+            free(center2);free(p2);free(n2);
+            free(center3);free(p3);free(n3);
+            free(center4);free(p4);free(n4);
 
 			currentTheta += thetaAngleStep;
 		}
