@@ -14,27 +14,70 @@ typedef struct point{
     float x;
     float y;
     float z;
+    float nx;
+    float ny;
+    float nz;
+    float tx;
+    float ty;
 }*Point;
 
-Point new_point(float x, float y, float z) {
+typedef struct simplePoint{
+    float x;
+    float y;
+    float z;
+}*SimplePoint;
+
+Point new_point(float x, float y, float z, float nx, float ny, float nz, float tx, float ty) {
     Point p = (Point) (malloc(sizeof(struct point)));
+    p->x = x; p->y = y; p->z = z;
+    p->nx = nx; p->ny = ny; p->nz = nz;
+    p->tx = tx; p->ty = ty;
+    return p;
+}
+
+SimplePoint new_simplePoint(float x, float y, float z) {
+    SimplePoint p = (SimplePoint) (malloc(sizeof(struct simplePoint)));
     p->x = x; p->y = y; p->z = z;
     return p;
 }
 
-void write_point(float x, float y, float z, std::ofstream& file){
+void write_point(float x, float y, float z, float nx, float ny, float nz, float tx, float ty, std::ofstream& file){
     file << std::to_string(x) << " "
          << std::to_string(y) << " "
-         << std::to_string(z) << " ";
+         << std::to_string(z) << " "
+         << std::to_string(nx) << " "
+         << std::to_string(ny) << " "
+         << std::to_string(nz) << " "
+         << std::to_string(tx) << " "
+         << std::to_string(ty) << " ";
 }
 
-Point getVector(Point v1, Point v2){
-    return new_point(v2->x - v1->x,
+SimplePoint getVector(Point v1, Point v2){
+    return new_simplePoint(v2->x - v1->x,
+                     v2->y - v1->y,
+                     v2->z - v1->z);
+}
+SimplePoint getVector(SimplePoint v1, SimplePoint v2){
+    return new_simplePoint(v2->x - v1->x,
                      v2->y - v1->y,
                      v2->z - v1->z);
 }
 
-void normalizeVector(Point& vec){
+Point joinPointVector(SimplePoint point, SimplePoint vector, float tx, float ty){
+    return new_point(point->x, point->y, point->z, vector->x, vector->y, vector->z, tx, ty);
+}
+
+void normalizeVector_Point(Point& vec){
+    float length = sqrt( vec->nx * vec->nx +
+                         vec->ny * vec->ny +
+                         vec->nz * vec->nz);
+    if (length == 0.0f)
+        length = 1.0f;
+    vec->nx /= length;
+    vec->ny /= length;
+    vec->nz /= length;
+}
+void normalizeVector(SimplePoint& vec){
     float length = sqrt( vec->x * vec->x +
                          vec->y * vec->y +
                          vec->z * vec->z);
@@ -44,37 +87,11 @@ void normalizeVector(Point& vec){
     vec->y /= length;
     vec->z /= length;
 }
-Point normal_vector_4p(Point p1, Point p2, Point p3, Point p4){
 
-    Point v1 = getVector(p1,p2);
-    Point v2 = getVector(p3,p4);
-    Point n =new_point(v1->y*v2->z - v1->z*v2->y,
-                       v1->z*v2->x - v1->x*v2->z,
-                       v1->x*v2->y - v1->y*v2->x);
+SimplePoint normal_at_point_torus(float x, float y, float z, float radius){
+    SimplePoint p0 = new_simplePoint(x,0,z); //ponto projetado com y=0 que é a altura do meio do torus
 
-    normalizeVector(n);
-    free(v1);free(v2);
-    return n;
-}
-
-
-Point normal_vector_3p(Point left, Point middle, Point right){
-
-    Point v1 = getVector(middle,left);
-    Point v2 = getVector(middle,right);
-    Point n =new_point(v1->y*v2->z - v1->z*v2->y,
-                       v1->z*v2->x - v1->x*v2->z,
-                       v1->x*v2->y - v1->y*v2->x);
-    normalizeVector(n);
-    free(v1);free(v2);
-    return n;
-}
-
-
-Point normal_at_point_torus(float x, float y, float z, float radius){
-    Point p0 = new_point(x,0,z); //ponto projetado com y=0 que é a altura do meio do torus
-
-    normalizeVector(p0); //norma 1
+    normalizeSimpleVector(p0); //norma 1
 
     p0->x*=radius;// multiplicamos pelo raio para ficar na circunferencia central
     p0->y*=radius;
@@ -88,7 +105,12 @@ Point normal_at_point_torus(float x, float y, float z, float radius){
 void write_point(Point p, std::ofstream& file) {
     file << std::to_string(p->x) << " "
          << std::to_string(p->y) << " "
-         << std::to_string(p->z) << " ";
+         << std::to_string(p->z) << " "
+         << std::to_string(p->nx) << " "
+         << std::to_string(p->ny) << " "
+         << std::to_string(p->nz) << " "
+         << std::to_string(p->tx) << " "
+         << std::to_string(p->ty) << " ";
 }
 
 long factorial(int n) {
@@ -104,7 +126,7 @@ long nCr(int n, int r) {
     return factorial(n) / (factorial(r) * factorial(n - r)); 
 }
 
-Point bernsteins_polinomials(float t, Point p0, Point p1, Point p2, Point p3){
+SimplePoint bernsteins_polinomials(float t, Point p0, Point p1, Point p2, Point p3){//mudar para simple point
     Point p =(Point)malloc(sizeof(float)*3);
     //B(t) = t³*P3 + 3t²*(1-t)*P2 + 3t*(1-t)²*P1 + (1-t)³*P0
     p->x = pow(t,3) * p3->x + 3*pow(t,2) * (1-t)* p2->x + 3*t* pow(1-t,2) * p1->x + pow(1-t,3) * p0->x;
@@ -250,60 +272,63 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
 			float x_1 = (mainRadius + tubeRadius * cosTheta) * cosPhi;
 			float y_1 = (mainRadius + tubeRadius * cosTheta) * sinPhi;
 			float z_1 = tubeRadius * sinTheta;
-            Point center1 = normal_at_point_torus(x_1,y_1,z_1,mainRadius); //calcula o ponto no raio interno do torus que intercecionava a projeção do ponto em y=0 e essa circunferencia 
-            Point p1 = new_point(x_1,y_1,z_1); 
-            Point n1 = getVector(center1,p1); //vetor    
+            SimplePoint center1 = normal_at_point_torus(x_1,y_1,z_1,mainRadius); //calcula o ponto no raio interno do torus que intercecionava a projeção do ponto em y=0 e essa circunferencia 
+            SimplePoint aux1 = new_simplePoint(x_1,y_1,z_1); 
+            SimplePoint n1 = getVector(center1,aux1); //vetor    
             normalizeVector(n1);
+            Point p1 = joinPointVector(aux1, n1);
+            free(center1);free(aux1);free(n1);
             
 			//Point 2 Coords
 			float x_2 = (mainRadius + tubeRadius * nextCosTheta) * nextCosPhi;
 			float y_2 = (mainRadius + tubeRadius * nextCosTheta) * nextSinPhi;
 			float z_2 = tubeRadius * nextSinTheta;
-            Point center2 = normal_at_point_torus(x_2,y_2,z_2,mainRadius);
-            Point p2 = new_point(x_2,y_2,z_2);
-            Point n2 = getVector(center2,p2);
+            SimplePoint center2 = normal_at_point_torus(x_2,y_2,z_2,mainRadius);
+            SimplePoint aux2 = new_simplePoint(x_2,y_2,z_2);
+            SimplePoint n2 = getVector(center2,aux2);
             normalizeVector(n2);
+            Point p2 = joinPointVector(aux2, n2);
+            free(center2);free(aux2);free(n2);
 
 			//Point 3 Coords
 			float x_3 = (mainRadius + tubeRadius * nextCosTheta) * cosPhi;
 			float y_3 = (mainRadius + tubeRadius * nextCosTheta) * sinPhi;
 			float z_3 = tubeRadius * nextSinTheta;
-            Point center3 = normal_at_point_torus(x_3,y_3,z_3,mainRadius);
-            Point p3 = new_point(x_3,y_3,z_3);
-            Point n3 = getVector(center3,p3);
+            SimplePoint center3 = normal_at_point_torus(x_3,y_3,z_3,mainRadius);
+            SimplePoint aux3 = new_simplePoint(x_3,y_3,z_3);
+            SimplePoint n3 = getVector(center3,aux3);
             normalizeVector(n3);
+            Point p3 = joinPointVector(aux3, n3);
+            free(center3);free(aux3);free(n3);
 
 			//Point 4 Coords
 			float x_4 = (mainRadius + tubeRadius * cosTheta) * nextCosPhi;
 			float y_4 = (mainRadius + tubeRadius * cosTheta) * nextSinPhi;
 			float z_4 = tubeRadius * sinTheta;
-            Point center4 = normal_at_point_torus(x_4,y_4,z_4,mainRadius);
-            Point p4 = new_point(x_4,y_4,z_4);
-            Point n4 = getVector(center4,p4);
+            SimplePoint center4 = normal_at_point_torus(x_4,y_4,z_4,mainRadius);
+            SimplePoint aux4 = new_simplePoint(x_4,y_4,z_4);
+            SimplePoint n4 = getVector(center4,aux4);
             normalizeVector(n4);
+            Point p4 = joinPointVector(aux4, n4);
+            free(center4);free(aux4);free(n4);
 
-			write_point(x_1,y_1,z_1,file);
-			write_point(x_2,y_2,z_2,file);
-			write_point(x_3,y_3,z_3,file);
-            write_point(n1, file);
-            write_point(n2, file);
-            write_point(n3, file);
+			write_point(p1,file);
+            file<<std::endl;
+			write_point(p2,file);
+            file<<std::endl;
+			write_point(p3,file);
             file<<std::endl;
 
-			write_point(x_1,y_1,z_1,file);
-			write_point(x_4,y_4,z_4,file);
-			write_point(x_2,y_2,z_2,file);
-            write_point(n1, file);
-            write_point(n4, file);
-            write_point(n2, file);
+			write_point(p1,file);
+            file<<std::endl;
+			write_point(p4,file);
+            file<<std::endl;
+			write_point(p2,file);
             file<<std::endl;
 
-            free(center1);free(p1);free(n1);
-            free(center2);free(p2);free(n2);
-            free(center3);free(p3);free(n3);
-            free(center4);free(p4);free(n4);
-
-			currentTheta += thetaAngleStep;
+            free(p1);free(p2);free(p3);free(p4);
+            
+            currentTheta += thetaAngleStep;
 		}
 		currentPhi += phiAngleStep;
 	}
@@ -333,7 +358,7 @@ int gen_sphere(char** args){
     float ang_stack = M_PI / stacks;
 	float ang_slice = (2 * (float)M_PI) / (float)slices;
 
-    Point center = new_point(0.0f, 0.0f, 0.0f); // ?????
+    SimplePoint center = new_simplePoint(0.0f, 0.0f, 0.0f); // ?????
 
 	for(int i = 0 ; i < slices ; i++){ //Iterate Slices
 		float alpha = (float)i * ang_slice;
@@ -355,51 +380,57 @@ int gen_sphere(char** args){
 			float x_1 = radius * cosBeta * sinAlpha;
 			float y_1 = radius * sinBeta;
 			float z_1 = radius * cosBeta * cosAlpha;
-            Point p1 = new_point(x_1, y_1, z_1);
-            Point n1 = getVector(center, p1);
+            SimplePoint aux1 = new_simplePoint(x_1, y_1, z_1);
+            SimplePoint n1 = getVector(center, aux1);
             normalizeVector(n1);
+            Point p1 = joinPointVector(aux1, n1);
+            free(aux1);free(n1);
 
 			//Point 2 Coords
 			float x_2 = radius * nextCosBeta * nextSinAlpha;
 			float y_2 = radius * nextSinBeta;
 			float z_2 = radius * nextCosBeta * nextCosAlpha;
-            Point p2 = new_point(x_2, y_2, z_2);
-            Point n2 = getVector(center, p2);
+            SimplePoint aux2 = new_simplePoint(x_2, y_2, z_2);
+            SimplePoint n2 = getVector(center, aux2);
             normalizeVector(n2);
+            Point p2 = joinPointVector(aux2, n2);
+            free(aux2);free(n2);
 
 			//Point 3 Coords
 			float x_3 = radius * nextCosBeta * sinAlpha;
 			float y_3 = radius * nextSinBeta;
 			float z_3 = radius * nextCosBeta * cosAlpha;
-            Point p3 = new_point(x_3, y_3, z_3);
-            Point n3 = getVector(center, p3);
+            SimplePoint aux3 = new_simplePoint(x_3, y_3, z_3);
+            SimplePoint n3 = getVector(center, aux3);
             normalizeVector(n3);
+            Point p3 = joinPointVector(aux3, n3);
+            free(aux3);free(n3);
 
 			//Point 4 Coords
 			float x_4 = radius * cosBeta * nextSinAlpha;
 			float y_4 = radius * sinBeta;
 			float z_4 = radius * cosBeta * nextCosAlpha;
-            Point p4 = new_point(x_4, y_4, z_4);
-            Point n4 = getVector(center, p4);
+            SimplePoint aux4 = new_simplePoint(x_4, y_4, z_4);
+            SimplePoint n4 = getVector(center, aux4);
             normalizeVector(n4);
+            Point p4 = joinPointVector(aux4, n4);
+            free(aux4);free(n4);
 
 			write_point(p1,file);
+            file<<std::endl;
 			write_point(p2,file);
+            file<<std::endl;
 			write_point(p3,file);
-            write_point(n1,file);
-			write_point(n2,file);
-			write_point(n3,file);
             file<<std::endl;
 
 			write_point(p1,file);
+            file<<std::endl;
 			write_point(p4,file);
+            file<<std::endl;
 			write_point(p2,file);
-            write_point(n1,file);
-			write_point(n4,file);
-			write_point(n2,file);
             file<<std::endl;
 
-            free(p1);free(p2);free(p3);free(p4);free(n1);free(n2);free(n3);free(n4);
+            free(p1);free(p2);free(p3);free(p4);
 		}
 	}
 
@@ -460,33 +491,32 @@ void box_front_back(float size, int grid, float sub_size, std::ofstream& file){
             float p12y=p4y;
             float p12z=p4z+size;
 
-            write_point(p1x,p1y,p1z,file);
-            write_point(p2x,p2y,p2z,file);
-            write_point(p3x,p3y,p3z,file);
-            write_point(0.0f, 0.0f, -1.0f, file);
-            write_point(0.0f, 0.0f, -1.0f, file);
-            write_point(0.0f, 0.0f, -1.0f, file);
+            write_point(p1x, p1y, p1z, 0.0f, 0.0f, -1.0f, ????, ?????, file);
             file<<std::endl;
-            write_point(p4x,p4y,p4z,file);
-            write_point(p5x,p5y,p5z,file);
-            write_point(p6x,p6y,p6z,file);
-            write_point(0.0f, 0.0f, -1.0f, file);
-            write_point(0.0f, 0.0f, -1.0f, file);
-            write_point(0.0f, 0.0f, -1.0f, file);
+            write_point(p2x, p2y, p2z, 0.0f, 0.0f, -1.0f, ????, ?????, file);
             file<<std::endl;
-            write_point(p7x,p7y,p7z,file);
-            write_point(p8x,p8y,p8z,file);
-            write_point(p9x,p9y,p9z,file);
-            write_point(0.0f, 0.0f, 1.0f, file);
-            write_point(0.0f, 0.0f, 1.0f, file);
-            write_point(0.0f, 0.0f, 1.0f, file);
+            write_point(p3x, p3y, p3z, 0.0f, 0.0f, -1.0f, ????, ?????, file);
             file<<std::endl;
-            write_point(p10x,p10y,p10z,file);
-            write_point(p11x,p11y,p11z,file);
-            write_point(p12x,p12y,p12z,file);
-            write_point(0.0f, 0.0f, 1.0f, file);
-            write_point(0.0f, 0.0f, 1.0f, file);
-            write_point(0.0f, 0.0f, 1.0f, file);
+
+            write_point(p4x, p4y, p4z, 0.0f, 0.0f, -1.0f, ????, ?????, file);
+            file<<std::endl;
+            write_point(p5x, p5y, p5z, 0.0f, 0.0f, -1.0f, ????, ?????, file);
+            file<<std::endl;
+            write_point(p6x, p6y, p6z, 0.0f, 0.0f, -1.0f, ????, ?????, file);
+            file<<std::endl;
+
+            write_point(p7x, p7y, p7z, 0.0f, 0.0f, 1.0f, ????, ?????, file);
+            file<<std::endl;
+            write_point(p8x, p8y, p8z, 0.0f, 0.0f, 1.0f, ????, ?????, file);
+            file<<std::endl;
+            write_point(p9x, p9y, p9z, 0.0f, 0.0f, 1.0f, ????, ?????, file);
+            file<<std::endl;
+
+            write_point(p10x, p10y, p10z, 0.0f, 0.0f, 1.0f, ????, ?????, file);
+            file<<std::endl;
+            write_point(p11x, p11y, p11z, 0.0f, 0.0f, 1.0f, ????, ?????, file);
+            file<<std::endl;
+            write_point(p12x, p12y, p12z, 0.0f, 0.0f, 1.0f, ????, ?????, file);
             file<<std::endl;
 
         }
@@ -546,33 +576,32 @@ void box_left_right(float size, int grid, float sub_size, std::ofstream& file){
             float p12y=p4y;
             float p12z=p4z;
 
-            write_point(p1x,p1y,p1z,file);
-            write_point(p2x,p2y,p2z,file);
-            write_point(p3x,p3y,p3z,file);
-            write_point(-1.0f, 0.0f, 0.0f, file);
-            write_point(-1.0f, 0.0f, 0.0f, file);
-            write_point(-1.0f, 0.0f, 0.0f, file);
+            write_point(p1x, p1y, p1z, -1.0f, 0.0f, 0.0f, ???, ???, file);
             file<<std::endl;
-            write_point(p4x,p4y,p4z,file);
-            write_point(p5x,p5y,p5z,file);
-            write_point(p6x,p6y,p6z,file);
-            write_point(-1.0f, 0.0f, 0.0f, file);
-            write_point(-1.0f, 0.0f, 0.0f, file);
-            write_point(-1.0f, 0.0f, 0.0f, file);
+            write_point(p2x, p2y, p2z, -1.0f, 0.0f, 0.0f, ???, ???, file);
             file<<std::endl;
-            write_point(p7x,p7y,p7z,file);
-            write_point(p8x,p8y,p8z,file);
-            write_point(p9x,p9y,p9z,file);
-            write_point(1.0f, 0.0f, 0.0f, file);
-            write_point(1.0f, 0.0f, 0.0f, file);
-            write_point(1.0f, 0.0f, 0.0f, file);
+            write_point(p3x, p3y, p3z, -1.0f, 0.0f, 0.0f, ???, ???, file);
             file<<std::endl;
-            write_point(p10x,p10y,p10z,file);
-            write_point(p11x,p11y,p11z,file);
-            write_point(p12x,p12y,p12z,file);
-            write_point(1.0f, 0.0f, 0.0f, file);
-            write_point(1.0f, 0.0f, 0.0f, file);
-            write_point(1.0f, 0.0f, 0.0f, file);
+
+            write_point(p4x, p4y, p4z, -1.0f, 0.0f, 0.0f, ???, ???, file);
+            file<<std::endl;
+            write_point(p5x, p5y, p5z, -1.0f, 0.0f, 0.0f, ???, ???, file);
+            file<<std::endl;
+            write_point(p6x, p6y, p6z, -1.0f, 0.0f, 0.0f, ???, ???, file);
+            file<<std::endl;
+
+            write_point(p7x, p7y ,p7z, 1.0f, 0.0f, 0.0f, ???, ???, file);
+            file<<std::endl;
+            write_point(p8x, p8y ,p8z, 1.0f, 0.0f, 0.0f, ???, ???, file);
+            file<<std::endl;
+            write_point(p9x, p9y ,p9z, 1.0f, 0.0f, 0.0f, ???, ???, file);
+            file<<std::endl;
+
+            write_point(p10x, p10y, p10z, 1.0f, 0.0f, 0.0f, ???, ???, file);
+            file<<std::endl;
+            write_point(p11x, p11y, p11z, 1.0f, 0.0f, 0.0f, ???, ???, file);
+            file<<std::endl;
+            write_point(p12x, p12y, p12z, 1.0f, 0.0f, 0.0f, ???, ???, file);
             file<<std::endl;
         }
     }
@@ -632,33 +661,32 @@ void box_top_bottom(float size, int grid, float sub_size, std::ofstream& file){
             float p12y=p4y+size;
             float p12z=p4z;
 
-            write_point(p1x,p1y,p1z,file);
-            write_point(p2x,p2y,p2z,file);
-            write_point(p3x,p3y,p3z,file);
-            write_point(0.0f, -1.0f, 0.0f, file);
-            write_point(0.0f, -1.0f, 0.0f, file);
-            write_point(0.0f, -1.0f, 0.0f, file);
+            write_point(p1x, p1y, p1z, 0.0f, -1.0f, 0.0f, ???, ???, file);
             file<<std::endl;
-            write_point(p4x,p4y,p4z,file);
-            write_point(p5x,p5y,p5z,file);
-            write_point(p6x,p6y,p6z,file);
-            write_point(0.0f, -1.0f, 0.0f, file);
-            write_point(0.0f, -1.0f, 0.0f, file);
-            write_point(0.0f, -1.0f, 0.0f, file);
+            write_point(p2x, p2y, p2z, 0.0f, -1.0f, 0.0f, ???, ???, file);
             file<<std::endl;
-            write_point(p7x,p7y,p7z,file);
-            write_point(p8x,p8y,p8z,file);
-            write_point(p9x,p9y,p9z,file);
-            write_point(0.0f, 1.0f, 0.0f, file);
-            write_point(0.0f, 1.0f, 0.0f, file);
-            write_point(0.0f, 1.0f, 0.0f, file);
+            write_point(p3x, p3y, p3z, 0.0f, -1.0f, 0.0f, ???, ???, file);
             file<<std::endl;
-            write_point(p10x,p10y,p10z,file);
-            write_point(p11x,p11y,p11z,file);
-            write_point(p12x,p12y,p12z,file);
-            write_point(0.0f, 1.0f, 0.0f, file);
-            write_point(0.0f, 1.0f, 0.0f, file);
-            write_point(0.0f, 1.0f, 0.0f, file);
+
+            write_point(p4x, p4y, p4z, 0.0f, -1.0f, 0.0f, ???, ???, file);
+            file<<std::endl;
+            write_point(p5x, p5y, p5z, 0.0f, -1.0f, 0.0f, ???, ???, file);
+            file<<std::endl;
+            write_point(p6x, p6y, p6z, 0.0f, -1.0f, 0.0f, ???, ???, file);
+            file<<std::endl;
+
+            write_point(p7x, p7y, p7z, 0.0f, 1.0f, 0.0f, ????, ???, file);
+            file<<std::endl;
+            write_point(p8x, p8y, p8z, 0.0f, 1.0f, 0.0f, ????, ???, file);
+            file<<std::endl;
+            write_point(p9x, p9y, p9z, 0.0f, 1.0f, 0.0f, ????, ???, file);
+            file<<std::endl;
+
+            write_point(p10x, p10y, p10z, 0.0f, 1.0f, 0.0f, ???, ???, file);
+            file<<std::endl;
+            write_point(p11x, p11y, p11z, 0.0f, 1.0f, 0.0f, ???, ???, file);
+            file<<std::endl;
+            write_point(p12x, p12y, p12z, 0.0f, 1.0f, 0.0f, ???, ???, file);
             file<<std::endl;
         }
     }
@@ -675,83 +703,6 @@ int gen_box(char** args){
     box_top_bottom((float)size,grid,sub_size,file);
     box_front_back((float)size,grid,sub_size,file);
 
-    file.close();
-    return 0;
-}
-
-
-void generate_cone(float radius, float height, int slices , float stacks, std::ofstream& file){
-    float alpha = 2*(float)M_PI / (float)slices;
-    float yratio = height/stacks;
-
-    for (int iaux=0; iaux<slices; iaux++){
-        float i = (float) iaux;
-        float s1 = radius*sin(i*alpha);
-        float s2 = radius*sin((i+1)*alpha);
-        float c1 = radius*cos(i*alpha);
-        float c2 = radius*cos((i+1)*alpha);
-
-        write_point(s2, 0, c2, file);
-        write_point(s1, 0, c1, file);
-        write_point(0, 0, 0, file);
-        write_point(0, -1, 0, file);
-        write_point(0, -1, 0, file);
-        write_point(0, -1, 0, file);
-        file<<std::endl;
-
-        for(int jaux=0;(float)jaux<stacks;jaux++){
-            float j = (float)jaux;
-
-            float newR = (-1)*((((j+1)*yratio)-height)*radius)/height;
-            float news1 = newR*sin(i*alpha);
-            float news2 = newR*sin((i+1)*alpha);
-            float newc1 = newR*cos(i*alpha);
-            float newc2 = newR*cos((i+1)*alpha);
-
-            Point p1 = new_point(s1, yratio*j, c1);
-            Point p2 = new_point(s2, yratio*j, c2);
-            Point p3 = new_point(news1, yratio*(j+1), newc1);
-            Point n1 = normal_vector_3p(p1, p2, p3);
-            write_point(p1, file);
-            write_point(p2, file);
-            write_point(p3, file);
-            write_point(n1, file);
-            write_point(n1, file);
-            write_point(n1, file);
-            free(p1);free(p2);free(p3);free(n1);
-
-            file<<std::endl;
-
-            if(j+1<stacks){
-                Point p1 = new_point(news2, yratio*(j+1), newc2);
-                Point p2 = new_point(news1, yratio*(j+1), newc1);
-                Point p3 = new_point(s2, yratio*j, c2);
-                Point n1 = normal_vector_3p(p1, p2, p3);
-                write_point(p1, file);
-                write_point(p2, file);
-                write_point(p3, file);
-                write_point(n1, file);
-                write_point(n1, file);
-                write_point(n1, file);
-                free(p1);free(p2);free(p3);free(n1);
-                file<<std::endl;
-            }
-            s1=news1;
-            s2=news2;
-            c1=newc1;
-            c2=newc2;
-        }
-    }
-}
-int gen_cone(char** args){
-    int radius = std::atoi(args[2]);
-    int height = std::atoi(args[3]);
-    int slices = std::atoi(args[4]);
-    int stacks = std::atoi(args[5]);
-
-    std::ofstream file;
-    file.open(args[6]);
-    generate_cone((float)radius, (float)height, slices , (float)stacks, file);
     file.close();
     return 0;
 }
@@ -794,19 +745,18 @@ int gen_plane(char** args){
 
             
 
-            write_point(p1x,p1y,p1z,file);
-            write_point(p2x,p2y,p2z,file);
-            write_point(p3x,p3y,p3z,file);
-            write_point(0.0f,1.0f,0.0f,file);
-            write_point(0.0f,1.0f,0.0f,file);
-            write_point(0.0f,1.0f,0.0f,file);
+            write_point(p1x, p1y, p1z, 0.0f, 1.0f, 0.0f, ???, ???, file);
             file<<std::endl;
-            write_point(p4x,p4y,p4z,file);
-            write_point(p5x,p5y,p5z,file);
-            write_point(p6x,p6y,p6z,file);
-            write_point(0.0f,1.0f,0.0f,file);
-            write_point(0.0f,1.0f,0.0f,file);
-            write_point(0.0f,1.0f,0.0f,file);
+            write_point(p2x, p2y, p2z, 0.0f, 1.0f, 0.0f, ???, ???, file);
+            file<<std::endl;
+            write_point(p3x, p3y, p3z, 0.0f, 1.0f, 0.0f, ???, ???, file);
+            file<<std::endl;
+
+            write_point(p4x, p4y, p4z, 0.0f, 1.0f, 0.0f, ???, ???, file);
+            file<<std::endl;
+            write_point(p5x, p5y, p5z, 0.0f, 1.0f, 0.0f, ???, ???, file);
+            file<<std::endl;
+            write_point(p6x, p6y, p6z, 0.0f, 1.0f, 0.0f, ???, ???, file);
             file<<std::endl;
         }
     }
