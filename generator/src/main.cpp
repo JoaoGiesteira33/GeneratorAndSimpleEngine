@@ -77,7 +77,7 @@ void normalizeVector_Point(Point& vec){
     vec->ny /= length;
     vec->nz /= length;
 }
-void normalizeVector(SimplePoint& vec){
+void normalizeSimpleVector(SimplePoint& vec){
     float length = sqrt( vec->x * vec->x +
                          vec->y * vec->y +
                          vec->z * vec->z);
@@ -126,8 +126,8 @@ long nCr(int n, int r) {
     return factorial(n) / (factorial(r) * factorial(n - r)); 
 }
 
-SimplePoint bernsteins_polinomials(float t, Point p0, Point p1, Point p2, Point p3){//mudar para simple point
-    Point p =(Point)malloc(sizeof(float)*3);
+SimplePoint bernsteins_polinomials(float t, SimplePoint p0, SimplePoint p1, SimplePoint p2, SimplePoint p3){//mudar para simple point
+    SimplePoint p =(SimplePoint)malloc(sizeof(float)*3);
     //B(t) = t³*P3 + 3t²*(1-t)*P2 + 3t*(1-t)²*P1 + (1-t)³*P0
     p->x = pow(t,3) * p3->x + 3*pow(t,2) * (1-t)* p2->x + 3*t* pow(1-t,2) * p1->x + pow(1-t,3) * p0->x;
     p->y = pow(t,3) * p3->y + 3*pow(t,2) * (1-t)* p2->y + 3*t* pow(1-t,2) * p1->y + pow(1-t,3) * p0->y;
@@ -136,10 +136,10 @@ SimplePoint bernsteins_polinomials(float t, Point p0, Point p1, Point p2, Point 
     return p;
 }
 
-Point *get_patch_points(Point points[], int patch[], int N){
-    Point *pts =(Point*)malloc(sizeof(Point)*N);
+SimplePoint *get_patch_points(SimplePoint points[], int patch[], int N){
+    SimplePoint *pts =(SimplePoint*)malloc(sizeof(Point)*N);
     for(int i=0; i<N; i++){
-        pts[i]=(Point)malloc(sizeof(float)*3);
+        pts[i]=(SimplePoint)malloc(sizeof(float)*3);
         pts[i]->x = points[patch[i]]->x;
         pts[i]->y = points[patch[i]]->y;
         pts[i]->z = points[patch[i]]->z;
@@ -149,7 +149,7 @@ Point *get_patch_points(Point points[], int patch[], int N){
 
 void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
 
-    Point *ctrl_points; 
+    SimplePoint *ctrl_points; 
 
     int line_counter=0,     //contar a linha do ficheiro conforme lẽ
         patch_counter=0,    //contar o número do patch conforme constrói a estrutura de dados index_patch
@@ -184,11 +184,11 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
         }
         //N_PATCHES + 1: Aloca espaço para x pontos (lê o x)
         else if(line_counter == n_patches +1)
-            ctrl_points =(Point*)malloc(sizeof(Point)*stoi(line));
+            ctrl_points =(SimplePoint*)malloc(sizeof(SimplePoint)*stoi(line));
 
         //PONTOS: guarda os pontos na estrutura ctrl_points pelo indice correspondente à ordem que aparecem
         else{
-            ctrl_points[point_counter] =(Point)malloc(sizeof(float)*3); 
+            ctrl_points[point_counter] =(SimplePoint)malloc(sizeof(float)*3); 
             char* line_c = strcpy(new char[line.length() + 1], line.c_str());
             char *ptr; // declare a ptr pointer  
 
@@ -202,16 +202,16 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
 
     float t =(float) 1/tecel; //fração de tecelagem
 
-    Point final_pts[n_patches][tecel+1][tecel+1]; //guarda os pontos de cada patch gerado por tecelagem
+    SimplePoint final_pts[n_patches][tecel+1][tecel+1]; //guarda os pontos de cada patch gerado por tecelagem
     
     for(int i=0; i<n_patches; i++){
-        Point *pts = get_patch_points(ctrl_points,index_patch[i], nr_points); //função para get os 16 pts do patch
+        SimplePoint *pts = get_patch_points(ctrl_points,index_patch[i], nr_points); //função para get os 16 pts do patch
 
         for(int k=0; k<=tecel; k++){
-            Point p0 = bernsteins_polinomials(k*t,pts[0], pts[1], pts[2], pts[3]); //pontos de controlo por k
-            Point p1 = bernsteins_polinomials(k*t,pts[4], pts[5], pts[6], pts[7]);
-            Point p2 = bernsteins_polinomials(k*t,pts[8], pts[9], pts[10], pts[11]);
-            Point p3 = bernsteins_polinomials(k*t,pts[12], pts[13], pts[14], pts[15]);
+            SimplePoint p0 = bernsteins_polinomials(k*t,pts[0], pts[1], pts[2], pts[3]); //pontos de controlo por k
+            SimplePoint p1 = bernsteins_polinomials(k*t,pts[4], pts[5], pts[6], pts[7]);
+            SimplePoint p2 = bernsteins_polinomials(k*t,pts[8], pts[9], pts[10], pts[11]);
+            SimplePoint p3 = bernsteins_polinomials(k*t,pts[12], pts[13], pts[14], pts[15]);
 
             for(int v=0; v<=tecel ; v++){
                 final_pts[i][k][v]=bernsteins_polinomials(v*t, p0,p1,p2,p3); //ponto de controlo de v
@@ -275,8 +275,8 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
             SimplePoint center1 = normal_at_point_torus(x_1,y_1,z_1,mainRadius); //calcula o ponto no raio interno do torus que intercecionava a projeção do ponto em y=0 e essa circunferencia 
             SimplePoint aux1 = new_simplePoint(x_1,y_1,z_1); 
             SimplePoint n1 = getVector(center1,aux1); //vetor    
-            normalizeVector(n1);
-            Point p1 = joinPointVector(aux1, n1);
+            normalizeSimpleVector(n1);
+            Point p1 = joinPointVector(aux1, n1,0,0);//corrigir txt
             free(center1);free(aux1);free(n1);
             
 			//Point 2 Coords
@@ -286,8 +286,8 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
             SimplePoint center2 = normal_at_point_torus(x_2,y_2,z_2,mainRadius);
             SimplePoint aux2 = new_simplePoint(x_2,y_2,z_2);
             SimplePoint n2 = getVector(center2,aux2);
-            normalizeVector(n2);
-            Point p2 = joinPointVector(aux2, n2);
+            normalizeSimpleVector(n2);
+            Point p2 = joinPointVector(aux2, n2,0,0);//txt
             free(center2);free(aux2);free(n2);
 
 			//Point 3 Coords
@@ -297,8 +297,8 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
             SimplePoint center3 = normal_at_point_torus(x_3,y_3,z_3,mainRadius);
             SimplePoint aux3 = new_simplePoint(x_3,y_3,z_3);
             SimplePoint n3 = getVector(center3,aux3);
-            normalizeVector(n3);
-            Point p3 = joinPointVector(aux3, n3);
+            normalizeSimpleVector(n3);
+            Point p3 = joinPointVector(aux3, n3,0,0); //txt
             free(center3);free(aux3);free(n3);
 
 			//Point 4 Coords
@@ -308,8 +308,8 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
             SimplePoint center4 = normal_at_point_torus(x_4,y_4,z_4,mainRadius);
             SimplePoint aux4 = new_simplePoint(x_4,y_4,z_4);
             SimplePoint n4 = getVector(center4,aux4);
-            normalizeVector(n4);
-            Point p4 = joinPointVector(aux4, n4);
+            normalizeSimpleVector(n4);
+            Point p4 = joinPointVector(aux4, n4,0,0);//txt
             free(center4);free(aux4);free(n4);
 
 			write_point(p1,file);
