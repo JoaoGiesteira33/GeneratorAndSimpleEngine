@@ -284,28 +284,28 @@ void prepareData(const int ind, const char *file_name){
     }
 
     if (myfile.is_open()){
-      while ( getline(myfile,line) )
-      {
-        stringstream ss(line);
-        //Ler linha de 3 pontos
-        for(int i=0 ; i<9 ; i++)
+        while ( getline(myfile,line) )
         {
-            ss >> aux;
-            cout << aux << " ";
-            points.push_back(aux);
+            stringstream ss(line);
+            //Ler ponto
+            for(int i=0 ; i<3 ; i++)
+            {
+                ss >> aux;
+                cout << aux << " ";
+                points.push_back(aux);
+            }
+            //Ler normal
+            for(int i=0 ; i<3 ; i++){
+                ss >> aux;
+                cout << aux << " ";
+                v_normals.push_back(aux);
+            }
+            //Ler coordenada da textura
+            for(int i = 0 ; i < 2 ; i++){
+                v_textures.push_back(0);
+            }
         }
-        //Ler linha de 3 normais
-        for(int i=0 ; i<9 ; i++){
-            ss >> aux;
-            cout << aux << " ";
-            v_normals.push_back(aux);
-        }
-
-        for(int i = 0 ; i < 6 ; i++){
-            v_textures.push_back(0);
-        }
-      }
-      myfile.close();
+        myfile.close();
     }
 
     verticeCount.push_back(points.size()/3);
@@ -913,7 +913,7 @@ int main(int argc, char **argv){
     glEnable(GL_LIGHTING);
     glEnable(GL_TEXTURE_2D);
 
-    
+
     if( loadFileInfo(pRoot) != 0)
     {
         cout << "Error loading file!" << endl;
