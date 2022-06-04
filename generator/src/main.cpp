@@ -712,7 +712,7 @@ int gen_plane(char** args){
     int divisions = std::atoi(args[3]);
     float sub_size = (float)len/(float)divisions;
 
-    float textureIncrement = 1/(divisions+1);
+    float textureIncrement = 1.0f/(float)(divisions+1);
     float tx = 0.0f;
     float ty = 0.0f;
 
@@ -744,8 +744,6 @@ int gen_plane(char** args){
             float p6x=p4x+sub_size;
             float p6y=p4y;
             float p6z=p4z-sub_size;
-
-            
 
             write_point(p1x, p1y, p1z, 0.0f, 1.0f, 0.0f, tx, ty, file);
             file<<std::endl;
