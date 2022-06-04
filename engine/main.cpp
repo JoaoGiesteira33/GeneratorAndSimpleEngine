@@ -302,7 +302,9 @@ void prepareData(const int ind, const char *file_name){
             }
             //Ler coordenada da textura
             for(int i = 0 ; i < 2 ; i++){
-                v_textures.push_back(0);
+                ss >> aux;
+                cout << aux << " ";
+                v_textures.push_back(aux);
             }
         }
         myfile.close();
@@ -655,9 +657,11 @@ void renderGroup(Group * g){
 
         if(mi.texture.compare("n/a") != 0){ //Draw with texture if model has it
             glBindTexture(GL_TEXTURE_2D,mi.texture_id);
-            glBindBuffer(GL_ARRAY_BUFFER, textures[ind]);
-	        glTexCoordPointer(2,GL_FLOAT,0,0);
+        }else{
+            glBindTexture(GL_TEXTURE_2D, 0);
         }
+        glBindBuffer(GL_ARRAY_BUFFER, textures[ind]);
+	    glTexCoordPointer(2,GL_FLOAT,0,0);
 
         glDrawArrays(GL_TRIANGLES,0,verticeCount[ind]);
         glBindTexture(GL_TEXTURE_2D, 0); //Reset
