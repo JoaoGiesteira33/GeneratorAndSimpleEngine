@@ -440,6 +440,11 @@ int gen_sphere(char** args){
 
 void box_front_back(float size, int grid, float sub_size, std::ofstream& file){
     //std::cout<<"------FRONT & BACK--------\n";
+    float textureIncrement = 1.0f/(float)(grid+1);
+    float tx = 0.0f;
+    float ty1 = 0.0f;
+    float ty2 = 1.0f;
+
     for(int i=0; i<grid ; i++){
         for(int j=0; j<grid; j++){
             //BACK
@@ -491,39 +496,49 @@ void box_front_back(float size, int grid, float sub_size, std::ofstream& file){
             float p12y=p4y;
             float p12z=p4z+size;
 
-            write_point(p1x, p1y, p1z, 0.0f, 0.0f, -1.0f, 0, 0, file);
+            write_point(p1x, p1y, p1z, 0.0f, 0.0f, -1.0f, tx, ty1, file);
             file<<std::endl;
-            write_point(p2x, p2y, p2z, 0.0f, 0.0f, -1.0f, 0, 0, file);
+            write_point(p2x, p2y, p2z, 0.0f, 0.0f, -1.0f, tx, ty1+textureIncrement, file);
             file<<std::endl;
-            write_point(p3x, p3y, p3z, 0.0f, 0.0f, -1.0f, 0, 0, file);
-            file<<std::endl;
-
-            write_point(p4x, p4y, p4z, 0.0f, 0.0f, -1.0f, 0, 0, file);
-            file<<std::endl;
-            write_point(p5x, p5y, p5z, 0.0f, 0.0f, -1.0f, 0, 0, file);
-            file<<std::endl;
-            write_point(p6x, p6y, p6z, 0.0f, 0.0f, -1.0f, 0, 0, file);
+            write_point(p3x, p3y, p3z, 0.0f, 0.0f, -1.0f, tx+textureIncrement, ty1+textureIncrement, file);
             file<<std::endl;
 
-            write_point(p7x, p7y, p7z, 0.0f, 0.0f, 1.0f, 0, 0, file);
+            write_point(p4x, p4y, p4z, 0.0f, 0.0f, -1.0f, tx, ty1+textureIncrement, file);
             file<<std::endl;
-            write_point(p8x, p8y, p8z, 0.0f, 0.0f, 1.0f, 0, 0, file);
+            write_point(p5x, p5y, p5z, 0.0f, 0.0f, -1.0f, tx+textureIncrement, ty1+textureIncrement, file);
             file<<std::endl;
-            write_point(p9x, p9y, p9z, 0.0f, 0.0f, 1.0f, 0, 0, file);
-            file<<std::endl;
-
-            write_point(p10x, p10y, p10z, 0.0f, 0.0f, 1.0f, 0, 0, file);
-            file<<std::endl;
-            write_point(p11x, p11y, p11z, 0.0f, 0.0f, 1.0f, 0, 0, file);
-            file<<std::endl;
-            write_point(p12x, p12y, p12z, 0.0f, 0.0f, 1.0f, 0, 0, file);
+            write_point(p6x, p6y, p6z, 0.0f, 0.0f, -1.0f, tx+textureIncrement, ty1, file);
             file<<std::endl;
 
+            write_point(p7x, p7y, p7z, 0.0f, 0.0f, 1.0f, tx, ty2, file);
+            file<<std::endl;
+            write_point(p8x, p8y, p8z, 0.0f, 0.0f, 1.0f, tx, ty2-textureIncrement, file);
+            file<<std::endl;
+            write_point(p9x, p9y, p9z, 0.0f, 0.0f, 1.0f, tx+textureIncrement, ty2, file);
+            file<<std::endl;
+
+            write_point(p10x, p10y, p10z, 0.0f, 0.0f, 1.0f, tx, ty2-textureIncrement, file);
+            file<<std::endl;
+            write_point(p11x, p11y, p11z, 0.0f, 0.0f, 1.0f, tx+textureIncrement, ty2-textureIncrement, file);
+            file<<std::endl;
+            write_point(p12x, p12y, p12z, 0.0f, 0.0f, 1.0f, tx+textureIncrement, ty2, file);
+            file<<std::endl;
+
+            ty1+=textureIncrement;
+            ty2-=textureIncrement;
         }
+        ty1 = 0.0f;
+        ty2 = 1.0f;
+        tx += textureIncrement;
     }
 }
 void box_left_right(float size, int grid, float sub_size, std::ofstream& file){
     //std::cout<<"------LEFT & RIGHT--------\n";
+    float textureIncrement = 1.0f/(float)(grid+1);
+    float tx = 0.0f;
+    float ty1 = 0.0f;
+    float ty2 = 1.0f;
+
     for(int i=0; i<grid ; i++){
         for(int j=0; j<grid; j++){
             //LEFT
@@ -576,38 +591,49 @@ void box_left_right(float size, int grid, float sub_size, std::ofstream& file){
             float p12y=p4y;
             float p12z=p4z;
 
-            write_point(p1x, p1y, p1z, -1.0f, 0.0f, 0.0f, 0, 0, file);
+            write_point(p1x, p1y, p1z, 0.0f, 0.0f, -1.0f, tx, ty1, file);
             file<<std::endl;
-            write_point(p2x, p2y, p2z, -1.0f, 0.0f, 0.0f, 0, 0, file);
+            write_point(p2x, p2y, p2z, 0.0f, 0.0f, -1.0f, tx, ty1+textureIncrement, file);
             file<<std::endl;
-            write_point(p3x, p3y, p3z, -1.0f, 0.0f, 0.0f, 0, 0, file);
-            file<<std::endl;
-
-            write_point(p4x, p4y, p4z, -1.0f, 0.0f, 0.0f, 0, 0, file);
-            file<<std::endl;
-            write_point(p5x, p5y, p5z, -1.0f, 0.0f, 0.0f, 0, 0, file);
-            file<<std::endl;
-            write_point(p6x, p6y, p6z, -1.0f, 0.0f, 0.0f, 0, 0, file);
+            write_point(p3x, p3y, p3z, 0.0f, 0.0f, -1.0f, tx+textureIncrement, ty1+textureIncrement, file);
             file<<std::endl;
 
-            write_point(p7x, p7y ,p7z, 1.0f, 0.0f, 0.0f, 0, 0, file);
+            write_point(p4x, p4y, p4z, 0.0f, 0.0f, -1.0f, tx, ty1+textureIncrement, file);
             file<<std::endl;
-            write_point(p8x, p8y ,p8z, 1.0f, 0.0f, 0.0f, 0, 0, file);
+            write_point(p5x, p5y, p5z, 0.0f, 0.0f, -1.0f, tx+textureIncrement, ty1+textureIncrement, file);
             file<<std::endl;
-            write_point(p9x, p9y ,p9z, 1.0f, 0.0f, 0.0f, 0, 0, file);
+            write_point(p6x, p6y, p6z, 0.0f, 0.0f, -1.0f, tx+textureIncrement, ty1, file);
             file<<std::endl;
 
-            write_point(p10x, p10y, p10z, 1.0f, 0.0f, 0.0f, 0, 0, file);
+            write_point(p7x, p7y, p7z, 0.0f, 0.0f, 1.0f, tx, ty2, file);
             file<<std::endl;
-            write_point(p11x, p11y, p11z, 1.0f, 0.0f, 0.0f, 0, 0, file);
+            write_point(p8x, p8y, p8z, 0.0f, 0.0f, 1.0f, tx, ty2-textureIncrement, file);
             file<<std::endl;
-            write_point(p12x, p12y, p12z, 1.0f, 0.0f, 0.0f, 0, 0, file);
+            write_point(p9x, p9y, p9z, 0.0f, 0.0f, 1.0f, tx+textureIncrement, ty2, file);
             file<<std::endl;
+
+            write_point(p10x, p10y, p10z, 0.0f, 0.0f, 1.0f, tx, ty2-textureIncrement, file);
+            file<<std::endl;
+            write_point(p11x, p11y, p11z, 0.0f, 0.0f, 1.0f, tx-textureIncrement, ty2-textureIncrement, file);
+            file<<std::endl;
+            write_point(p12x, p12y, p12z, 0.0f, 0.0f, 1.0f, tx+textureIncrement, ty2, file);
+            file<<std::endl;
+
+            ty1+=textureIncrement;
+            ty2-=textureIncrement;
         }
+        ty1 = 0.0f;
+        ty2 = 1.0f;
+        tx += textureIncrement;
     }
 }
 void box_top_bottom(float size, int grid, float sub_size, std::ofstream& file){
     //std::cout<<"------TOP & BOTTOM--------\n";
+    float textureIncrement = 1.0f/(float)(grid+1);
+    float tx = 0.0f;
+    float ty1 = 0.0f;
+    float ty2 = 1.0f;
+
     for(int i=0; i<grid ; i++){
         for(int j=0; j<grid; j++){
             
@@ -661,34 +687,40 @@ void box_top_bottom(float size, int grid, float sub_size, std::ofstream& file){
             float p12y=p4y+size;
             float p12z=p4z;
 
-            write_point(p1x, p1y, p1z, 0.0f, -1.0f, 0.0f, 0, 0, file);
+            write_point(p1x, p1y, p1z, 0.0f, 0.0f, -1.0f, tx, ty1, file);
             file<<std::endl;
-            write_point(p2x, p2y, p2z, 0.0f, -1.0f, 0.0f, 0, 0, file);
+            write_point(p2x, p2y, p2z, 0.0f, 0.0f, -1.0f, tx, ty1+textureIncrement, file);
             file<<std::endl;
-            write_point(p3x, p3y, p3z, 0.0f, -1.0f, 0.0f, 0, 0, file);
-            file<<std::endl;
-
-            write_point(p4x, p4y, p4z, 0.0f, -1.0f, 0.0f, 0, 0, file);
-            file<<std::endl;
-            write_point(p5x, p5y, p5z, 0.0f, -1.0f, 0.0f, 0, 0, file);
-            file<<std::endl;
-            write_point(p6x, p6y, p6z, 0.0f, -1.0f, 0.0f, 0, 0, file);
+            write_point(p3x, p3y, p3z, 0.0f, 0.0f, -1.0f, tx+textureIncrement, ty1+textureIncrement, file);
             file<<std::endl;
 
-            write_point(p7x, p7y, p7z, 0.0f, 1.0f, 0.0f, 0, 0, file);
+            write_point(p4x, p4y, p4z, 0.0f, 0.0f, -1.0f, tx, ty1+textureIncrement, file);
             file<<std::endl;
-            write_point(p8x, p8y, p8z, 0.0f, 1.0f, 0.0f, 0, 0, file);
+            write_point(p5x, p5y, p5z, 0.0f, 0.0f, -1.0f, tx+textureIncrement, ty1+textureIncrement, file);
             file<<std::endl;
-            write_point(p9x, p9y, p9z, 0.0f, 1.0f, 0.0f, 0, 0, file);
+            write_point(p6x, p6y, p6z, 0.0f, 0.0f, -1.0f, tx+textureIncrement, ty1, file);
             file<<std::endl;
 
-            write_point(p10x, p10y, p10z, 0.0f, 1.0f, 0.0f, 0, 0, file);
+            write_point(p7x, p7y, p7z, 0.0f, 0.0f, 1.0f, tx, ty2, file);
             file<<std::endl;
-            write_point(p11x, p11y, p11z, 0.0f, 1.0f, 0.0f, 0, 0, file);
+            write_point(p8x, p8y, p8z, 0.0f, 0.0f, 1.0f, tx, ty2-textureIncrement, file);
             file<<std::endl;
-            write_point(p12x, p12y, p12z, 0.0f, 1.0f, 0.0f, 0, 0, file);
+            write_point(p9x, p9y, p9z, 0.0f, 0.0f, 1.0f, tx+textureIncrement, ty2, file);
             file<<std::endl;
+
+            write_point(p10x, p10y, p10z, 0.0f, 0.0f, 1.0f, tx, ty2-textureIncrement, file);
+            file<<std::endl;
+            write_point(p11x, p11y, p11z, 0.0f, 0.0f, 1.0f, tx-textureIncrement, ty2-textureIncrement, file);
+            file<<std::endl;
+            write_point(p12x, p12y, p12z, 0.0f, 0.0f, 1.0f, tx+textureIncrement, ty2, file);
+            file<<std::endl;
+
+            ty1+=textureIncrement;
+            ty2-=textureIncrement;
         }
+        ty1 = 0.0f;
+        ty2 = 1.0f;
+        tx += textureIncrement;
     }
 }
 int gen_box(char** args){
@@ -782,8 +814,6 @@ SimplePoint normal_cone(float x, float y, float z,float height, float radius, fl
         normalizeVector(vetor);
         //std::cout<<" Angle: "<<atan(vetor->y/sqrt(pow(vetor->x,2)+pow(vetor->z,2)));
     }
-    //std::cout<<"    Point: "<<x<<", "<<y<<", "<<z;
-    //std::cout<<"    Normal: "<<vetor->x<<", "<<vetor->y<<", "<<vetor->z<<"\n";
     return vetor;
 }
 
@@ -892,13 +922,6 @@ int check_args(int n, char **args){
 
 
 int main(int argc, char **argv) {
-    /*
-    Point p1 = new_point(0,0,0);
-    Point p3 = new_point(1,0,0);
-    Point p4 = new_point(0,0,1);
-    Point p2 = new_point(1,0,1);
-    Point p = normal_vector_4p(p1,p2,p3,p4);
-    std::cout<<p->x<<", "<<p->y<<", "<<p->z;*/
 
     if(!argv[1] || !*argv[1]){
         std::cout<<"Invalid input"<<std::endl;
