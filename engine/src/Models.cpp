@@ -11,6 +11,13 @@ ModelInfo::ModelInfo()
     shininess = 0.0f;
 }
 
+void normalize_values(ModelInfo &m){
+    m.ambient[0] /= 255;  m.ambient[1] /= 255;  m.ambient[2] /= 255;
+    m.diffuse[0] /= 255;  m.diffuse[1] /= 255;  m.diffuse[2] /= 255;
+    m.specular[0] /= 255;  m.specular[1] /= 255;  m.specular[2] /= 255;
+    m.emissive[0] /= 255;  m.emissive[1] /= 255;  m.emissive[2] /= 255;
+}
+
 ModelInfo loadModelInfo(XMLElement * pElement){
     ModelInfo ret;
 
@@ -57,5 +64,6 @@ ModelInfo loadModelInfo(XMLElement * pElement){
         }
     }
 
+    normalize_values(ret);
     return ret;
 }

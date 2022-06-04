@@ -78,6 +78,7 @@ Group* rootGroup;
 vector<GLuint> vertices;
 vector<GLuint> verticeCount;
 vector<GLuint> normals;
+vector<GLuint> textures;
 
 //Camera Values
 int camera_mode = 0;
@@ -94,7 +95,6 @@ float camera_dx;
 float camera_dy;
 float camera_dz;
 
-
 //FPS auxiliary Values
 int timebase;
 float frame = 0;
@@ -110,10 +110,10 @@ int loadTexture(string s) {
 
 	//Iniciar o DevIL
 	ilInit();
-
+    
 	//Colocar origem da textura no canto inferior esquerdo
-	//ilEnable(IL_ORIGIN_SET);
-	//ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
+	ilEnable(IL_ORIGIN_SET);
+	ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
 
 	//Carregar a textura para memória
 	ilGenImages(1,&t);
@@ -140,8 +140,8 @@ int loadTexture(string s) {
 		
 	//Upload dos dados de imagem
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData);
-	glGenerateMipmap(GL_TEXTURE_2D);
-
+    glGenerateMipmap(GL_TEXTURE_2D);
+    cout << "Mipmap generated\n";
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	return texID;
@@ -273,6 +273,7 @@ void orbitalCamera(){
 void prepareData(const int ind, const char *file_name){
     vector<float> points;
     vector<float> v_normals;
+    vector<float> v_textures;
     string line;
     ifstream myfile(file_name);
     GLfloat aux;
@@ -299,17 +300,23 @@ void prepareData(const int ind, const char *file_name){
             cout << aux << " ";
             v_normals.push_back(aux);
         }
+
+        for(int i = 0 ; i < 6 ; i++){
+            v_textures.push_back(0);
+        }
       }
       myfile.close();
     }
 
     verticeCount.push_back(points.size()/3);
 
-    //Criar o VBO
     cout << "Indice in here is: " << ind << endl;
     GLint value = ind + 1;
+    //Get space
     vertices.push_back(value);
     normals.push_back(value);
+    textures.push_back(value);
+    //Create VBOs
     glGenBuffers(1,&vertices.at(ind));
     cout << "Value: " << value << endl; 
     glBindBuffer(GL_ARRAY_BUFFER, vertices[ind]);
@@ -326,6 +333,15 @@ void prepareData(const int ind, const char *file_name){
                 v_normals.data(),GL_STATIC_DRAW);
 
     cout << "Added => Normals: " << normals[ind] << " | VerticesCount: " << verticeCount[ind] << endl;
+
+    glGenBuffers(1, &textures.at(ind));
+	glBindBuffer(GL_ARRAY_BUFFER, textures[ind]);
+	glBufferData(GL_ARRAY_BUFFER,
+                sizeof(float) * v_textures.size(),
+                v_textures.data(), GL_STATIC_DRAW);
+
+    cout << "Added => Textures: " << textures[ind] << endl;
+
 }
 
 int load_models(Group * group, XMLElement * pList){
@@ -361,7 +377,7 @@ int load_models(Group * group, XMLElement * pList){
             }else{ //Texture is not loaded/found
                 cout << "First time seeing this texture" << endl;
                 //Load Texture
-                newModelInfo.texture_id = rand();//loadTexture(newModelInfo.texture);
+                newModelInfo.texture_id = loadTexture(newModelInfo.texture);
                 cout << "Safely loaded texture with id: " << newModelInfo.texture_id << endl;
                 //Save new texture
                 docInfo.textures.insert( {newModelInfo.texture,newModelInfo.texture_id} );
@@ -490,10 +506,6 @@ Group* load_group(XMLElement * pList){
 }
 
 int loadLights(XMLElement * pElement){
-    //glEnable(GL_RESCALE_NORMAL);
-    //float amb[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, amb);
-
     XMLElement * light = pElement->FirstChildElement();
     int light_number = 0;
 
@@ -613,16 +625,19 @@ void renderGroup(Group * g){
     for(int i = 0 ; i < (g->models_indices).size() ; i++){
         int ind = (g->models_indices)[i];
         ModelInfo mi = g->models_info[i];
+        
         cout << "Diffuse: " << mi.diffuse[0] << " | " << mi.diffuse[1] << " | " << mi.diffuse[2] << endl;
         cout << "Ambient: " << mi.ambient[0] << " | " << mi.ambient[1] << " | " << mi.ambient[2] << endl;
         cout << "Specular: " << mi.specular[0] << " | " << mi.specular[1] << " | " << mi.specular[2] << endl;
         cout << "Emissive: " << mi.emissive[0] << " | " << mi.emissive[1] << " | " << mi.emissive[2] << endl;
-        
+        cout << "Shininess: " << mi.shininess << endl;
+
         GLfloat materialDiffuse[] = {mi.diffuse[0],mi.diffuse[1],mi.diffuse[2],1.0};
 	    GLfloat materialAmbient[] = {mi.ambient[0],mi.ambient[1],mi.ambient[2],1.0};
 	    GLfloat materialSpecular[] = {mi.specular[0],mi.specular[1],mi.specular[2],1.0};
 	    GLfloat materialEmissive[] = {mi.emissive[0],mi.emissive[1],mi.emissive[2],1.0};
 	    GLfloat materialShininess[] = {mi.shininess};
+
 
         glMaterialfv(GL_FRONT, GL_DIFFUSE, materialDiffuse);
 	    glMaterialfv(GL_FRONT, GL_AMBIENT, materialAmbient);
@@ -638,7 +653,14 @@ void renderGroup(Group * g){
         glBindBuffer(GL_ARRAY_BUFFER,normals[ind]);
 	    glNormalPointer(GL_FLOAT,0,0);
 
+        if(mi.texture.compare("n/a") != 0){ //Draw with texture if model has it
+            glBindTexture(GL_TEXTURE_2D,mi.texture_id);
+            glBindBuffer(GL_ARRAY_BUFFER, textures[ind]);
+	        glTexCoordPointer(2,GL_FLOAT,0,0);
+        }
+
         glDrawArrays(GL_TRIANGLES,0,verticeCount[ind]);
+        glBindTexture(GL_TEXTURE_2D, 0); //Reset
     }
     
     //Render sub-groups
@@ -857,12 +879,6 @@ int main(int argc, char **argv){
     XMLNode * pRoot = doc.FirstChild();
     if (pRoot == nullptr) return XML_ERROR_FILE_READ_ERROR;
 
-    if( loadFileInfo(pRoot) != 0)
-    {
-        cout << "Error loading file!" << endl;
-        return 1;
-    }
-
     //Init GLUT and the Window
     glutInit(&argc,argv);
     glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
@@ -892,9 +908,17 @@ int main(int argc, char **argv){
     
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
-    //glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glEnable(GL_LIGHTING);
+    glEnable(GL_TEXTURE_2D);
+
+    
+    if( loadFileInfo(pRoot) != 0)
+    {
+        cout << "Error loading file!" << endl;
+        return 1;
+    }
 
     //Load 3d files to vertices arrays
     cout << "Starting to prepare data\n";
