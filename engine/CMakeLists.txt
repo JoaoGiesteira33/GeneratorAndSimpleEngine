@@ -65,6 +65,8 @@ file(COPY ${CMAKE_SOURCE_DIR}/textures/moonmapthumb.jpg DESTINATION ${CMAKE_BINA
 file(COPY ${CMAKE_SOURCE_DIR}/textures/8k_stars.jpg DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${CMAKE_SOURCE_DIR}/textures/saturnringcolor.jpg DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${CMAKE_SOURCE_DIR}/textures/textura.png DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${CMAKE_SOURCE_DIR}/textures/8k_stars_milky_way.jpg DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${CMAKE_SOURCE_DIR}/textures/8k_sun.jpg DESTINATION ${CMAKE_BINARY_DIR})
 if (WIN32)
 	target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} glut32 glew32 DevIL)
 	file(COPY ${TOOLKITS_FOLDER}/glew/glew32.dll DESTINATION ${CMAKE_BINARY_DIR})

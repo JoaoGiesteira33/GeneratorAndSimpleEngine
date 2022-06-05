@@ -173,6 +173,7 @@ void renderLight(){
 }
 
 void renderCatmullRomCurve(float **points, int point_count) {
+    glDisable(GL_LIGHTING);
 	float point[3];
 	float dir[3];
 	glBegin(GL_LINE_LOOP);
@@ -181,6 +182,7 @@ void renderCatmullRomCurve(float **points, int point_count) {
 		glVertex3f(point[0],point[1],point[2]);
 	}
 	glEnd();
+    glEnable(GL_LIGHTING);
 }
 
 void updateRotateMatrix(Group * g, TimeDependentRotate * tdr){
@@ -893,7 +895,7 @@ int main(int argc, char **argv){
     //Required callback registry
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);
-    //glutIdleFunc(renderScene);
+    glutIdleFunc(renderScene);
 
     //Callback registration for keyboard processing
 	glutKeyboardFunc(processKeys);
