@@ -639,7 +639,7 @@ int gen_plane(char** args){
 
     float textureIncrement = 1.0f/(float)(divisions);
     float tx = 0.0f;
-    float ty = 0.0f;
+    float ty = 1.0f;
 
     std::ofstream file;
     file.open(args[4]);
@@ -672,21 +672,21 @@ int gen_plane(char** args){
 
             write_point(p1x, p1y, p1z, 0.0f, 1.0f, 0.0f, tx, ty, file);
             file<<std::endl;
-            write_point(p2x, p2y, p2z, 0.0f, 1.0f, 0.0f, tx, ty+textureIncrement, file);
+            write_point(p2x, p2y, p2z, 0.0f, 1.0f, 0.0f, tx, ty-textureIncrement, file);
             file<<std::endl;
             write_point(p3x, p3y, p3z, 0.0f, 1.0f, 0.0f, tx+textureIncrement, ty, file);
             file<<std::endl;
 
-            write_point(p4x, p4y, p4z, 0.0f, 1.0f, 0.0f, tx, ty+textureIncrement, file);
+            write_point(p4x, p4y, p4z, 0.0f, 1.0f, 0.0f, tx, ty-textureIncrement, file);
             file<<std::endl;
-            write_point(p5x, p5y, p5z, 0.0f, 1.0f, 0.0f, tx+textureIncrement, ty+textureIncrement, file);
+            write_point(p5x, p5y, p5z, 0.0f, 1.0f, 0.0f, tx+textureIncrement, ty-textureIncrement, file);
             file<<std::endl;
             write_point(p6x, p6y, p6z, 0.0f, 1.0f, 0.0f, tx+textureIncrement, ty, file);
             file<<std::endl;
 
-            ty+=textureIncrement;
+            ty-=textureIncrement;
         }
-        ty = 0.0f;
+        ty = 1.0f;
         tx += textureIncrement;
     }
     
