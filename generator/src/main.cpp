@@ -14,7 +14,6 @@ long nCr(int n, int r) {
 }
 
 void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
-
     SimplePoint *ctrl_points; 
 
     int line_counter=0,     //contar a linha do ficheiro conforme lẽ
@@ -223,6 +222,14 @@ int gen_sphere(char** args){
     float ang_stack = M_PI / stacks;
 	float ang_slice = (2 * (float)M_PI) / (float)slices;
 
+    float tx, ty, nextTx, nextTy, txStep, tyStep;
+    
+    tx=0.0f;
+    txStep = 1.0f/(float)slices;
+    ty=0.0f;
+    tyStep = 1.0/(float)stacks;
+
+
     SimplePoint center = new_simplePoint(0.0f, 0.0f, 0.0f); // ?????
 
 	for(int i = 0 ; i < slices ; i++){ //Iterate Slices
@@ -248,7 +255,7 @@ int gen_sphere(char** args){
             SimplePoint aux1 = new_simplePoint(x_1, y_1, z_1);
             SimplePoint n1 = getVector(center, aux1);
             normalizeVector(n1);
-            Point p1 = joinPointVector(aux1, n1, 0, 0);
+            Point p1 = joinPointVector(aux1, n1, tx, ty);
             free(aux1);free(n1);
 
 			//Point 2 Coords
@@ -258,7 +265,7 @@ int gen_sphere(char** args){
             SimplePoint aux2 = new_simplePoint(x_2, y_2, z_2);
             SimplePoint n2 = getVector(center, aux2);
             normalizeVector(n2);
-            Point p2 = joinPointVector(aux2, n2, 0, 0);
+            Point p2 = joinPointVector(aux2, n2, tx+txStep, ty+tyStep);
             free(aux2);free(n2);
 
 			//Point 3 Coords
@@ -268,7 +275,7 @@ int gen_sphere(char** args){
             SimplePoint aux3 = new_simplePoint(x_3, y_3, z_3);
             SimplePoint n3 = getVector(center, aux3);
             normalizeVector(n3);
-            Point p3 = joinPointVector(aux3, n3, 0, 0);
+            Point p3 = joinPointVector(aux3, n3, tx, ty+tyStep);
             free(aux3);free(n3);
 
 			//Point 4 Coords
@@ -278,7 +285,7 @@ int gen_sphere(char** args){
             SimplePoint aux4 = new_simplePoint(x_4, y_4, z_4);
             SimplePoint n4 = getVector(center, aux4);
             normalizeVector(n4);
-            Point p4 = joinPointVector(aux4, n4, 0, 0);
+            Point p4 = joinPointVector(aux4, n4, tx+txStep, ty);
             free(aux4);free(n4);
 
 			write_point(p1,file);
@@ -296,7 +303,11 @@ int gen_sphere(char** args){
             file<<std::endl;
 
             free(p1);free(p2);free(p3);free(p4);
+
+            tx += txStep;
 		}
+        tx = 0.0f;
+        ty += tyStep;
 	}
 
     file.close();

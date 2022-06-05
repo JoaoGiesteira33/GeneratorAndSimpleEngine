@@ -8,8 +8,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#ifndef POINTS_AND_VECTORS
-#define POINTS_AND_VECTORS
+#ifndef POINTS_AND_VECTORS_H
+#define POINTS_AND_VECTORS_H
 
 
 typedef struct point{
