@@ -333,7 +333,7 @@ int gen_sphere(char** args){
 
 void box_front_back(float size, int grid, float sub_size, std::ofstream& file){
     //std::cout<<"------FRONT & BACK--------\n";
-    float textureIncrement = 1.0f/(float)(grid+1);
+    float textureIncrement = 1.0f/(float)(grid);
     float tx = 0.0f;
     float ty1 = 0.0f;
     float ty2 = 1.0f;
@@ -427,7 +427,7 @@ void box_front_back(float size, int grid, float sub_size, std::ofstream& file){
 }
 void box_left_right(float size, int grid, float sub_size, std::ofstream& file){
     //std::cout<<"------LEFT & RIGHT--------\n";
-    float textureIncrement = 1.0f/(float)(grid+1);
+    float textureIncrement = 1.0f/(float)(grid);
     float tx = 0.0f;
     float ty1 = 0.0f;
     float ty2 = 1.0f;
@@ -522,7 +522,7 @@ void box_left_right(float size, int grid, float sub_size, std::ofstream& file){
 }
 void box_top_bottom(float size, int grid, float sub_size, std::ofstream& file){
     //std::cout<<"------TOP & BOTTOM--------\n";
-    float textureIncrement = 1.0f/(float)(grid+1);
+    float textureIncrement = 1.0f/(float)(grid);
     float tx = 0.0f;
     float ty1 = 0.0f;
     float ty2 = 1.0f;
@@ -637,7 +637,7 @@ int gen_plane(char** args){
     int divisions = std::atoi(args[3]);
     float sub_size = (float)len/(float)divisions;
 
-    float textureIncrement = 1.0f/(float)(divisions+1);
+    float textureIncrement = 1.0f/(float)(divisions);
     float tx = 0.0f;
     float ty = 0.0f;
 
