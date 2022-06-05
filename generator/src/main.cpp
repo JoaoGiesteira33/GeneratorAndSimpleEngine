@@ -138,6 +138,7 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
 	float phiAngleStep = (2 * (float)M_PI) / float(mainSegments);
 	float thetaAngleStep = (2 * (float)M_PI) / float(tubeSegments);
 	float currentPhi = 0.0f;
+    float ratio = 1.0/(tubeSegments/2);
 
 	for(int i = 0 ; i < mainSegments ; i++){
 		float sinPhi = sinf(currentPhi);
@@ -145,14 +146,18 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
 		float nextSinPhi = sinf(currentPhi + phiAngleStep);
 		float nextCosPhi = cosf(currentPhi + phiAngleStep);
 		float currentTheta = 0.0f;
-		
+		int k=0;
 		for(int j = 0 ; j < tubeSegments ; j++){
+            float u=0;
+            float v1= k*ratio;
+            float v2 = (v1>1)? 1-ratio : (k+1)*ratio;
 			float sinTheta = sinf(currentTheta);
 			float cosTheta = cosf(currentTheta);
 			float nextSinTheta = sinf(currentTheta + thetaAngleStep);
 			float nextCosTheta = cosf(currentTheta + thetaAngleStep);
 
 			//Point 1 Coords
+           
 			float x_1 = (mainRadius + tubeRadius * cosTheta) * cosPhi;
 			float y_1 = (mainRadius + tubeRadius * cosTheta) * sinPhi;
 			float z_1 = tubeRadius * sinTheta;
@@ -160,7 +165,7 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
             SimplePoint aux1 = new_simplePoint(x_1,y_1,z_1); 
             SimplePoint n1 = getVector(center1,aux1); //vetor    
             normalizeVector(n1);
-            Point p1 = joinPointVector(aux1, n1,0,0);//corrigir txt
+            Point p1 = joinPointVector(aux1, n1,v1,u);//corrigir txt
             free(center1);free(aux1);free(n1);
             
 			//Point 2 Coords
@@ -171,7 +176,7 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
             SimplePoint aux2 = new_simplePoint(x_2,y_2,z_2);
             SimplePoint n2 = getVector(center2,aux2);
             normalizeVector(n2);
-            Point p2 = joinPointVector(aux2, n2,0,0);//txt
+            Point p2 = joinPointVector(aux2, n2,v2,u);//txt
             free(center2);free(aux2);free(n2);
 
 			//Point 3 Coords
@@ -182,7 +187,7 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
             SimplePoint aux3 = new_simplePoint(x_3,y_3,z_3);
             SimplePoint n3 = getVector(center3,aux3);
             normalizeVector(n3);
-            Point p3 = joinPointVector(aux3, n3,0,0); //txt
+            Point p3 = joinPointVector(aux3, n3,v2,u); //txt
             free(center3);free(aux3);free(n3);
 
 			//Point 4 Coords
@@ -193,7 +198,7 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
             SimplePoint aux4 = new_simplePoint(x_4,y_4,z_4);
             SimplePoint n4 = getVector(center4,aux4);
             normalizeVector(n4);
-            Point p4 = joinPointVector(aux4, n4,0,0);//txt
+            Point p4 = joinPointVector(aux4, n4,v1,u);//txt
             free(center4);free(aux4);free(n4);
 
 			write_point(p1,file);
@@ -213,6 +218,9 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
             free(p1);free(p2);free(p3);free(p4);
             
             currentTheta += thetaAngleStep;
+
+            if(j>tubeSegments/2)k--;
+            else k++;
 		}
 		currentPhi += phiAngleStep;
 	}
