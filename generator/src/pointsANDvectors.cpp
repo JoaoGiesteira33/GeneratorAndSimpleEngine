@@ -72,7 +72,6 @@ SimplePoint normal_at_point_torus(float x, float y, float z, float radius){
     p0->y*=radius;
     p0->z*=radius;
 
-    //std::cout<<"Raio: "<<p0->z<<", "<<p0->y<<", "<<p0->z<<"\n";
     return p0;
 }
 
@@ -94,12 +93,10 @@ SimplePoint normal_cone(float x, float y, float z,float height, float radius, fl
         vetor = new_simplePoint(0.0f, 1.0f, 0.0f);
     else if(y==0){
         vetor = new_simplePoint(x, 0.0f, z);
-        //std::cout<<" Angle: "<<atan(vetor->y/sqrt(pow(vetor->x,2)+pow(vetor->z,2)));
     }
     else{
         vetor = new_simplePoint(x, declive * sqrt(pow(x,2)+pow(z,2)) , z);
         normalizeVector(vetor);
-        //std::cout<<" Angle: "<<atan(vetor->y/sqrt(pow(vetor->x,2)+pow(vetor->z,2)));
     }
     return vetor;
 }

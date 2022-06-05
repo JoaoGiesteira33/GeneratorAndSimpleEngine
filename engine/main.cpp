@@ -293,19 +293,16 @@ void prepareData(const int ind, const char *file_name){
             for(int i=0 ; i<3 ; i++)
             {
                 ss >> aux;
-                cout << aux << " ";
                 points.push_back(aux);
             }
             //Ler normal
             for(int i=0 ; i<3 ; i++){
                 ss >> aux;
-                cout << aux << " ";
                 v_normals.push_back(aux);
             }
             //Ler coordenada da textura
             for(int i = 0 ; i < 2 ; i++){
                 ss >> aux;
-                cout << aux << " ";
                 v_textures.push_back(aux);
             }
         }
@@ -799,8 +796,6 @@ void processMouseClick(int button, int state, int x, int y){
     if(camera_mode==0) camera_mode = 1;
 
     switch (button) {
-        /*case(GLUT_MIDDLE_BUTTON):
-            break;*/
         case(GLUT_LEFT_BUTTON):
             if(state==GLUT_DOWN){
                 tracking=1;
@@ -852,21 +847,6 @@ void printInfo() {
     fflush(stdout);
 }
 
-void processMousePassiveMotion(int x, int y){
-    /*if(camera_mode==2){
-        float deltaX = (float)x-mousePosX;
-        float deltaY = (float)y-mousePosY;
-        mousePosX=(float)x;
-        mousePosY=(float)y;
-        camera_alpha -= deltaX/400;
-        camera_beta += deltaY/400;
-        if (camera_beta > 1.5f)
-            camera_beta = 1.5f;
-        if (camera_beta < -1.5f)
-            camera_beta = -1.5f;
-        glutPostRedisplay();
-    }*/
-}
 
 int main(int argc, char **argv){
     if(!argv[1] || !*argv[1]) {

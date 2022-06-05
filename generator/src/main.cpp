@@ -4,7 +4,6 @@ long factorial(int n) {
     long factorial = 1;
     for (int i = 2; i <= n; i++)
         factorial = factorial * i;
-    //printf("FACTORIAL %d: %d\n",n,factorial);
     return factorial;
     
 }
@@ -69,8 +68,8 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
     float t = 1.0f/(float)tecel; //fração de tecelagem
 
     SimplePoint final_pts[n_patches][tecel+1][tecel+1]; //guarda os pontos de cada patch gerado por tecelagem
-    SimplePoint derivadasK[n_patches][tecel+1][tecel+1];
-    SimplePoint derivadasV[n_patches][tecel+1][tecel+1];
+    SimplePoint derivadasK[n_patches][tecel+1][tecel+1];//derivadas em ordem a K nos pontos 
+    SimplePoint derivadasV[n_patches][tecel+1][tecel+1];//derivadas em ordem a V nos pontos 
     for(int i=0; i<n_patches; i++){
         SimplePoint *pts = get_patch_points(ctrl_points,index_patch[i], nr_points); //função para get os 16 pts do patch
 
@@ -99,16 +98,16 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
         for(int k=0; k<tecel; k++){
             for(int v=0; v<tecel; v++){
 
-                Point p1 = joinPointVector(final_pts[i][k][v]   , cross(derivadasK[i][k][v]  , derivadasV[i][k][v]  ) ,(float)k/tecel,(float)v/tecel);//corrigir txt
-                Point p2 = joinPointVector(final_pts[i][k+1][v] , cross(derivadasK[i][k+1][v], derivadasV[i][k+1][v]) ,(float)(k+1)/tecel,(float)v/tecel);//corrigir txt
-                Point p3 = joinPointVector(final_pts[i][k][v+1] , cross(derivadasK[i][k][v+1], derivadasV[i][k][v+1]) ,(float)k/tecel,(float)(v+1)/tecel);//corrigir txt
+                Point p1 = joinPointVector(final_pts[i][k][v]   , cross(derivadasK[i][k][v]  , derivadasV[i][k][v]  ) ,(float)k/tecel,(float)v/tecel);
+                Point p2 = joinPointVector(final_pts[i][k+1][v] , cross(derivadasK[i][k+1][v], derivadasV[i][k+1][v]) ,(float)(k+1)/tecel,(float)v/tecel);
+                Point p3 = joinPointVector(final_pts[i][k][v+1] , cross(derivadasK[i][k][v+1], derivadasV[i][k][v+1]) ,(float)k/tecel,(float)(v+1)/tecel);
                 write_point(p1,file); file<<std::endl;
                 write_point(p2,file); file<<std::endl;
                 write_point(p3,file); file<<std::endl;
                 
-                Point p4 = joinPointVector(final_pts[i][k][v+1]   , cross(derivadasK[i][k][v+1]  , derivadasV[i][k][v+1]  ) ,(float)k/tecel,(float)(v+1)/tecel);//corrigir txt
-                Point p5 = joinPointVector(final_pts[i][k+1][v]   , cross(derivadasK[i][k+1][v]  , derivadasV[i][k+1][v]  ) ,(float)(k+1)/tecel,(float)v/tecel);//corrigir txt
-                Point p6 = joinPointVector(final_pts[i][k+1][v+1] , cross(derivadasK[i][k+1][v+1], derivadasV[i][k+1][v+1]) ,(float)(k+1)/tecel,(float)(v+1)/tecel);//corrigir txt
+                Point p4 = joinPointVector(final_pts[i][k][v+1]   , cross(derivadasK[i][k][v+1]  , derivadasV[i][k][v+1]  ) ,(float)k/tecel,(float)(v+1)/tecel);
+                Point p5 = joinPointVector(final_pts[i][k+1][v]   , cross(derivadasK[i][k+1][v]  , derivadasV[i][k+1][v]  ) ,(float)(k+1)/tecel,(float)v/tecel);
+                Point p6 = joinPointVector(final_pts[i][k+1][v+1] , cross(derivadasK[i][k+1][v+1], derivadasV[i][k+1][v+1]) ,(float)(k+1)/tecel,(float)(v+1)/tecel);
                 write_point(p4,file); file<<std::endl;
                 write_point(p5,file); file<<std::endl;
                 write_point(p6,file); file<<std::endl;
@@ -165,7 +164,7 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
             SimplePoint aux1 = new_simplePoint(x_1,y_1,z_1); 
             SimplePoint n1 = getVector(center1,aux1); //vetor    
             normalizeVector(n1);
-            Point p1 = joinPointVector(aux1, n1,v1,u);//corrigir txt
+            Point p1 = joinPointVector(aux1, n1,v1,u);
             free(center1);free(aux1);free(n1);
             
 			//Point 2 Coords
@@ -176,7 +175,7 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
             SimplePoint aux2 = new_simplePoint(x_2,y_2,z_2);
             SimplePoint n2 = getVector(center2,aux2);
             normalizeVector(n2);
-            Point p2 = joinPointVector(aux2, n2,v2,u);//txt
+            Point p2 = joinPointVector(aux2, n2,v2,u);
             free(center2);free(aux2);free(n2);
 
 			//Point 3 Coords
@@ -187,7 +186,7 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
             SimplePoint aux3 = new_simplePoint(x_3,y_3,z_3);
             SimplePoint n3 = getVector(center3,aux3);
             normalizeVector(n3);
-            Point p3 = joinPointVector(aux3, n3,v2,u); //txt
+            Point p3 = joinPointVector(aux3, n3,v2,u); 
             free(center3);free(aux3);free(n3);
 
 			//Point 4 Coords
@@ -198,7 +197,7 @@ void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float t
             SimplePoint aux4 = new_simplePoint(x_4,y_4,z_4);
             SimplePoint n4 = getVector(center4,aux4);
             normalizeVector(n4);
-            Point p4 = joinPointVector(aux4, n4,v1,u);//txt
+            Point p4 = joinPointVector(aux4, n4,v1,u);
             free(center4);free(aux4);free(n4);
 
 			write_point(p1,file);
@@ -258,7 +257,7 @@ int gen_sphere(char** args){
     tyStep = 1.0/(float)stacks;
 
 
-    SimplePoint center = new_simplePoint(0.0f, 0.0f, 0.0f); // ?????
+    SimplePoint center = new_simplePoint(0.0f, 0.0f, 0.0f); 
 
 	for(int i = 0 ; i < slices ; i++){ //Iterate Slices
 		float alpha = (float)i * ang_slice;

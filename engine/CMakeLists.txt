@@ -44,7 +44,7 @@ include_directories(
 
 file(GLOB all_SRCS 
             "src/*.cpp"
-            "include/*.h"
+            "includes/*.h"
             main.cpp)
 add_executable(${PROJECT_NAME} ${all_SRCS})
 
