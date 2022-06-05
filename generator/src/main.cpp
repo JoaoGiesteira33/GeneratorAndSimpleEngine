@@ -99,19 +99,19 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
         for(int k=0; k<tecel; k++){
             for(int v=0; v<tecel; v++){
 
-                Point p1 = joinPointVector(final_pts[i][k][v]   , cross(derivadasK[i][k][v]  , derivadasV[i][k][v]  ) ,0.0f,0.0f);//corrigir txt
-                Point p2 = joinPointVector(final_pts[i][k+1][v] , cross(derivadasK[i][k+1][v], derivadasV[i][k+1][v]) ,0.0f,0.0f);//corrigir txt
-                Point p3 = joinPointVector(final_pts[i][k][v+1] , cross(derivadasK[i][k][v+1], derivadasV[i][k][v+1]) ,0.0f,0.0f);//corrigir txt
+                Point p1 = joinPointVector(final_pts[i][k][v]   , cross(derivadasK[i][k][v]  , derivadasV[i][k][v]  ) ,(float)k/tecel,(float)v/tecel);//corrigir txt
+                Point p2 = joinPointVector(final_pts[i][k+1][v] , cross(derivadasK[i][k+1][v], derivadasV[i][k+1][v]) ,(float)(k+1)/tecel,(float)v/tecel);//corrigir txt
+                Point p3 = joinPointVector(final_pts[i][k][v+1] , cross(derivadasK[i][k][v+1], derivadasV[i][k][v+1]) ,(float)k/tecel,(float)(v+1)/tecel);//corrigir txt
                 write_point(p1,file); file<<std::endl;
                 write_point(p2,file); file<<std::endl;
                 write_point(p3,file); file<<std::endl;
                 
-                Point p4 = joinPointVector(final_pts[i][k][v+1]   , cross(derivadasK[i][k][v+1]  , derivadasV[i][k][v+1]  ) ,0.0f,0.0f);//corrigir txt
-                Point p5 = joinPointVector(final_pts[i][k+1][v]   , cross(derivadasK[i][k+1][v]  , derivadasV[i][k+1][v]  ) ,0.0f,0.0f);//corrigir txt
-                Point p6 = joinPointVector(final_pts[i][k+1][v+1] , cross(derivadasK[i][k+1][v+1], derivadasV[i][k+1][v+1]) ,0.0f,0.0f);//corrigir txt
+                Point p4 = joinPointVector(final_pts[i][k][v+1]   , cross(derivadasK[i][k][v+1]  , derivadasV[i][k][v+1]  ) ,(float)k/tecel,(float)(v+1)/tecel);//corrigir txt
+                Point p5 = joinPointVector(final_pts[i][k+1][v]   , cross(derivadasK[i][k+1][v]  , derivadasV[i][k+1][v]  ) ,(float)(k+1)/tecel,(float)v/tecel);//corrigir txt
+                Point p6 = joinPointVector(final_pts[i][k+1][v+1] , cross(derivadasK[i][k+1][v+1], derivadasV[i][k+1][v+1]) ,(float)(k+1)/tecel,(float)(v+1)/tecel);//corrigir txt
                 write_point(p4,file); file<<std::endl;
                 write_point(p5,file); file<<std::endl;
-                write_point(p5,file); file<<std::endl;
+                write_point(p6,file); file<<std::endl;
 
                 free(p1);free(p2);free(p3);free(p4);free(p5);free(p6);
             }
