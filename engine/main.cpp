@@ -141,7 +141,7 @@ int loadTexture(string s) {
 	//Upload dos dados de imagem
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData);
     glGenerateMipmap(GL_TEXTURE_2D);
-    cout << "Mipmap generated\n";
+
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	return texID;
@@ -512,6 +512,8 @@ Group* load_group(XMLElement * pList){
 int loadLights(XMLElement * pElement){
     XMLElement * light = pElement->FirstChildElement();
     int light_number = 0;
+    float amb[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, amb);
 
     while(light != nullptr && light_number < 8){
         if ( light->Attribute( "type", "point" ) ){
@@ -641,7 +643,6 @@ void renderGroup(Group * g){
 	    GLfloat materialSpecular[] = {mi.specular[0],mi.specular[1],mi.specular[2],1.0};
 	    GLfloat materialEmissive[] = {mi.emissive[0],mi.emissive[1],mi.emissive[2],1.0};
 	    GLfloat materialShininess[] = {mi.shininess};
-
 
         glMaterialfv(GL_FRONT, GL_DIFFUSE, materialDiffuse);
 	    glMaterialfv(GL_FRONT, GL_AMBIENT, materialAmbient);
@@ -915,12 +916,10 @@ int main(int argc, char **argv){
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
     glEnable(GL_LIGHTING);
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_RESCALE_NORMAL);
-    float amb[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, amb);
 
     if( loadFileInfo(pRoot) != 0)
     {
