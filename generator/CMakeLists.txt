@@ -8,6 +8,6 @@ include_directories(
 
 file(GLOB all_SRCS 
             "src/*.cpp"
-            "include/*.h"
+            "includes/*.h"
             )
 add_executable(Generator ${all_SRCS})
