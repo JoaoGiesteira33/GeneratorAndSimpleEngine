@@ -882,7 +882,6 @@ int main(int argc, char **argv){
 	glutKeyboardFunc(processKeys);
     glutMouseFunc(processMouseClick);
     glutMotionFunc(processMouseMotion);
-    glutPassiveMotionFunc(processMousePassiveMotion);
 
     //Init GLEW
     #ifndef __APPLE__
