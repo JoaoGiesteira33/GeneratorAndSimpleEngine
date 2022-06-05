@@ -243,7 +243,7 @@ int gen_sphere(char** args){
     
     tx=0.0f;
     txStep = 1.0f/(float)slices;
-    ty=0.0f;
+    ty=1.0f;
     tyStep = 1.0/(float)stacks;
 
 
@@ -321,10 +321,10 @@ int gen_sphere(char** args){
 
             free(p1);free(p2);free(p3);free(p4);
 
-            tx += txStep;
+            ty += txStep;
 		}
-        tx = 0.0f;
-        ty += tyStep;
+        ty = 1.0f;
+        tx += txStep;
 	}
 
     file.close();
