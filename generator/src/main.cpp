@@ -393,14 +393,14 @@ void box_front_back(float size, int grid, float sub_size, std::ofstream& file){
             file<<std::endl;
             write_point(p2x, p2y, p2z, 0.0f, 0.0f, -1.0f, tx1, ty+textureIncrement, file);
             file<<std::endl;
-            write_point(p3x, p3y, p3z, 0.0f, 0.0f, -1.0f, tx1+textureIncrement, ty, file);
+            write_point(p3x, p3y, p3z, 0.0f, 0.0f, -1.0f, tx1-textureIncrement, ty, file);
             file<<std::endl;
 
             write_point(p4x, p4y, p4z, 0.0f, 0.0f, -1.0f, tx1, ty+textureIncrement, file);
             file<<std::endl;
-            write_point(p5x, p5y, p5z, 0.0f, 0.0f, -1.0f, tx1+textureIncrement, ty+textureIncrement, file);
+            write_point(p5x, p5y, p5z, 0.0f, 0.0f, -1.0f, tx1-textureIncrement, ty+textureIncrement, file);
             file<<std::endl;
-            write_point(p6x, p6y, p6z, 0.0f, 0.0f, -1.0f, tx1+textureIncrement, ty, file);
+            write_point(p6x, p6y, p6z, 0.0f, 0.0f, -1.0f, tx1-textureIncrement, ty, file);
             file<<std::endl;
 
             write_point(p7x, p7y, p7z, 0.0f, 0.0f, 1.0f, tx2, ty+textureIncrement, file);
