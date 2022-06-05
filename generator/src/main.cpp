@@ -608,11 +608,11 @@ void box_top_bottom(float size, int grid, float sub_size, std::ofstream& file){
             write_point(p12x, p12y, p12z, 0.0f, 1.0f, 0.0f, tx, ty2-textureIncrement, file);
             file<<std::endl;
 
-            ty1-=textureIncrement;
-            ty2+=textureIncrement;
+            ty1+=textureIncrement;
+            ty2-=textureIncrement;
         }
-        ty1 = 1.0f;
-        ty2 = 0.0f;
+        ty1 = 0.0f;
+        ty2 = 1.0f;
         tx += textureIncrement;
     }
 }
@@ -700,6 +700,11 @@ void generate_cone(float radius, float height, int slices , float stacks, std::o
     float beta = M_PI/2 - atan(height/radius); //angulo da normal da superficie
     float declive = tan(beta);
 
+    float tx = 0.0f;
+    float ty = 0.0f;
+    float textXstep = 1.0f/(float)slices;
+    float textYstep = 1.0f/(float)stacks;
+
     for (int iaux=0; iaux<slices; iaux++){
         float i = (float) iaux;
         float s1 = radius*sin(i*alpha);
@@ -707,11 +712,11 @@ void generate_cone(float radius, float height, int slices , float stacks, std::o
         float c1 = radius*cos(i*alpha);
         float c2 = radius*cos((i+1)*alpha);
 
-        write_point(s2, 0.0f, c2, 0.0f, -1.0f, 0.0f, 0, 0, file);
+        write_point(s2, 0.0f, c2, 0.0f, -1.0f, 0.0f, 0, 0, file);//ignore texture
         file<<std::endl;
-        write_point(s1, 0.0f, c1, 0.0f, -1.0f, 0.0f, 0, 0, file);
+        write_point(s1, 0.0f, c1, 0.0f, -1.0f, 0.0f, 0, 0, file);//ignore texture
         file<<std::endl;
-        write_point(0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0, 0, file);
+        write_point(0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0, 0, file);//ignore texture
         file<<std::endl;
 
         for(int jaux=0;(float)jaux<stacks;jaux++){
@@ -731,9 +736,9 @@ void generate_cone(float radius, float height, int slices , float stacks, std::o
             SimplePoint n2 = normal_cone(s2, yratio*j, c2, height , radius, declive);
             SimplePoint n3 = normal_cone(news1, yratio*(j+1), newc1, height , radius, declive);
 
-            Point p1 = joinPointVector(aux1, n1, 0, 0);
-            Point p2 = joinPointVector(aux2, n2, 0, 0);
-            Point p3 = joinPointVector(aux3, n3, 0, 0);
+            Point p1 = joinPointVector(aux1, n1, tx, ty);
+            Point p2 = joinPointVector(aux2, n2, tx+textXstep, ty);
+            Point p3 = joinPointVector(aux3, n3, tx, ty+textYstep);
             free(aux1);free(aux2);free(aux3);
             free(n1);free(n2);free(n3);
 
@@ -755,9 +760,9 @@ void generate_cone(float radius, float height, int slices , float stacks, std::o
                 SimplePoint n2 = normal_cone(news1, yratio*(j+1),newc1, height ,radius, declive);
                 SimplePoint n3 = normal_cone(s2, yratio*j,c2, height ,radius, declive);
                 
-                Point p1 = joinPointVector(aux1, n1, 0, 0);
-                Point p2 = joinPointVector(aux2, n2, 0, 0);
-                Point p3 = joinPointVector(aux3, n3, 0, 0);
+                Point p1 = joinPointVector(aux1, n1, tx+textXstep, ty+textYstep);
+                Point p2 = joinPointVector(aux2, n2, tx, ty+textYstep);
+                Point p3 = joinPointVector(aux3, n3, tx+textXstep, ty);
                 free(aux1);free(aux2);free(aux3);
                 free(n1);free(n2);free(n3);
                 
@@ -774,7 +779,10 @@ void generate_cone(float radius, float height, int slices , float stacks, std::o
             s2=news2;
             c1=newc1;
             c2=newc2;
+
+            ty += textYstep;
         }
+        tx += textXstep;
     }
 }
 int gen_cone(char** args){
