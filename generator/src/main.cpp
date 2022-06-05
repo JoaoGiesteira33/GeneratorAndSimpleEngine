@@ -608,11 +608,11 @@ void box_top_bottom(float size, int grid, float sub_size, std::ofstream& file){
             write_point(p12x, p12y, p12z, 0.0f, 1.0f, 0.0f, tx, ty2-textureIncrement, file);
             file<<std::endl;
 
-            ty1-=textureIncrement;
-            ty2+=textureIncrement;
+            ty1+=textureIncrement;
+            ty2-=textureIncrement;
         }
-        ty1 = 1.0f;
-        ty2 = 0.0f;
+        ty1 = 0.0f;
+        ty2 = 1.0f;
         tx += textureIncrement;
     }
 }

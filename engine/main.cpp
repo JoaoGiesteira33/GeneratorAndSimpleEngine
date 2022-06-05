@@ -918,7 +918,9 @@ int main(int argc, char **argv){
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glEnable(GL_LIGHTING);
     glEnable(GL_TEXTURE_2D);
-
+    glEnable(GL_RESCALE_NORMAL);
+    float amb[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, amb);
 
     if( loadFileInfo(pRoot) != 0)
     {
