@@ -13,6 +13,8 @@ long nCr(int n, int r) {
     return factorial(n) / (factorial(r) * factorial(n - r)); 
 }
 
+
+
 void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
     SimplePoint *ctrl_points; 
 
@@ -68,7 +70,8 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
     float t =(float) 1/tecel; //fração de tecelagem
 
     SimplePoint final_pts[n_patches][tecel+1][tecel+1]; //guarda os pontos de cada patch gerado por tecelagem
-    
+    SimplePoint derivadasK[n_patches][tecel+1][tecel+1];
+    SimplePoint derivadasV[n_patches][tecel+1][tecel+1];
     for(int i=0; i<n_patches; i++){
         SimplePoint *pts = get_patch_points(ctrl_points,index_patch[i], nr_points); //função para get os 16 pts do patch
 
@@ -78,8 +81,17 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
             SimplePoint p2 = bernsteins_polinomials(k*t,pts[8], pts[9], pts[10], pts[11]);
             SimplePoint p3 = bernsteins_polinomials(k*t,pts[12], pts[13], pts[14], pts[15]);
 
+            SimplePoint k0 = bernsteins_derivative(k*t,pts[0], pts[1], pts[2], pts[3]); 
+            SimplePoint k1 = bernsteins_derivative(k*t,pts[4], pts[5], pts[6], pts[7]);
+            SimplePoint k2 = bernsteins_derivative(k*t,pts[8], pts[9], pts[10], pts[11]);
+            SimplePoint k3 = bernsteins_derivative(k*t,pts[12], pts[13], pts[14], pts[15]);
+
             for(int v=0; v<=tecel ; v++){
-                final_pts[i][k][v]=bernsteins_polinomials(v*t, p0,p1,p2,p3); //ponto de controlo de v
+                final_pts[i][k][v]=bernsteins_polinomials(v*t, p0,p1,p2,p3); 
+                derivadasK[i][k][v]=bernsteins_polinomials(v*t, k0,k1,k2,k3);   //pontos derivados em ordem a k
+                derivadasV[i][k][v]=bernsteins_derivative(v*t, p0,p1,p2,p3);    //pontos derivados em ordem a v
+                normalizeVector(derivadasK[i][k][v]);
+;               normalizeVector(derivadasV[i][k][v]);
             }
         }
     }
@@ -87,15 +99,20 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
     for(int i=0; i<n_patches; i++){
         for(int k=0; k<tecel; k++){
             for(int v=0; v<tecel; v++){
-                //write_point(final_pts[i][k][v], file);
-                //write_point(final_pts[i][k+1][v], file);
-                //write_point(final_pts[i][k][v+1], file);  
-                file<<std::endl;
 
-                //write_point(final_pts[i][k][v+1], file);
-                //write_point(final_pts[i][k+1][v], file);
-                //write_point(final_pts[i][k+1][v+1], file);
-                file<<std::endl;
+                Point p1 = joinPointVector(final_pts[i][k][v]   , cross(derivadasK[i][k][v]  , derivadasV[i][k][v]  ) ,0,0);//corrigir txt
+                Point p2 = joinPointVector(final_pts[i][k+1][v] , cross(derivadasK[i][k+1][v], derivadasV[i][k+1][v]) ,0,0);//corrigir txt
+                Point p3 = joinPointVector(final_pts[i][k][v+1] , cross(derivadasK[i][k][v+1], derivadasV[i][k][v+1]) ,0,0);//corrigir txt
+                write_point(p1,file); file<<std::endl;
+                write_point(p2,file); file<<std::endl;
+                write_point(p3,file); file<<std::endl;
+                
+                Point p4 = joinPointVector(final_pts[i][k][v+1]   , cross(derivadasK[i][k][v+1]  , derivadasV[i][k][v+1]  ) ,0,0);//corrigir txt
+                Point p5 = joinPointVector(final_pts[i][k+1][v]   , cross(derivadasK[i][k+1][v]  , derivadasV[i][k+1][v]  ) ,0,0);//corrigir txt
+                Point p6 = joinPointVector(final_pts[i][k+1][v+1] , cross(derivadasK[i][k+1][v+1], derivadasV[i][k+1][v+1]) ,0,0);//corrigir txt
+                write_point(p4,file); file<<std::endl;
+                write_point(p5,file); file<<std::endl;
+                write_point(p5,file); file<<std::endl;
             }
         }
     }

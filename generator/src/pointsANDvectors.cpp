@@ -114,6 +114,22 @@ SimplePoint bernsteins_polinomials(float t, SimplePoint p0, SimplePoint p1, Simp
     return p;
 }
 
+SimplePoint bernsteins_derivative(float t, SimplePoint p0, SimplePoint p1, SimplePoint p2, SimplePoint p3){//mudar para simple point
+    SimplePoint p =(SimplePoint)malloc(sizeof(float)*3);
+    //B(t) = t³*P3 + 3t²*(1-t)*P2 + 3t*(1-t)²*P1 + (1-t)³*P0
+    p->x = 3*pow(t,2) * p3->x + (-9*pow(t,2)+6*t) * p2->x + (9*pow(t,2)-12*t+3) * p1->x + (-3*pow(t,2)+6*t-3) * p0->x;
+    p->y = 3*pow(t,2) * p3->y + (-9*pow(t,2)+6*t) * p2->y + (9*pow(t,2)-12*t+3) * p1->y + (-3*pow(t,2)+6*t-3) * p0->y;
+    p->z = 3*pow(t,2) * p3->z + (-9*pow(t,2)+6*t) * p2->z + (9*pow(t,2)-12*t+3) * p1->z + (-3*pow(t,2)+6*t-3) * p0->z;
+
+    return p;
+}
+
+SimplePoint cross(SimplePoint a, SimplePoint b){
+    return new_simplePoint(a->y*b->z - a->z*b->y,
+                           a->z*b->x - a->x*b->z,
+                           a->x*b->y - a->y*b->x);
+}
+
 SimplePoint *get_patch_points(SimplePoint points[], int patch[], int N){
     SimplePoint *pts =(SimplePoint*)malloc(sizeof(Point)*N);
     for(int i=0; i<N; i++){
