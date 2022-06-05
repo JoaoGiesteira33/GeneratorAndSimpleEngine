@@ -53,6 +53,10 @@ SimplePoint normal_cone(float x, float y, float z,float height, float radius, fl
 
 SimplePoint bernsteins_polinomials(float t, SimplePoint p0, SimplePoint p1, SimplePoint p2, SimplePoint p3);
 
+SimplePoint bernsteins_derivative(float t, SimplePoint p0, SimplePoint p1, SimplePoint p2, SimplePoint p3);
+
+SimplePoint cross(SimplePoint a, SimplePoint b);
+
 SimplePoint *get_patch_points(SimplePoint points[], int patch[], int N);
 
 #endif
