@@ -14,7 +14,6 @@ long nCr(int n, int r) {
 }
 
 
-
 void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
     SimplePoint *ctrl_points; 
 
@@ -67,7 +66,7 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
         line_counter++;
     }
 
-    float t =(float) 1/tecel; //fração de tecelagem
+    float t = 1.0f/(float)tecel; //fração de tecelagem
 
     SimplePoint final_pts[n_patches][tecel+1][tecel+1]; //guarda os pontos de cada patch gerado por tecelagem
     SimplePoint derivadasK[n_patches][tecel+1][tecel+1];
@@ -91,7 +90,7 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
                 derivadasK[i][k][v]=bernsteins_polinomials(v*t, k0,k1,k2,k3);   //pontos derivados em ordem a k
                 derivadasV[i][k][v]=bernsteins_derivative(v*t, p0,p1,p2,p3);    //pontos derivados em ordem a v
                 normalizeVector(derivadasK[i][k][v]);
-;               normalizeVector(derivadasV[i][k][v]);
+                normalizeVector(derivadasV[i][k][v]);
             }
         }
     }
@@ -100,19 +99,21 @@ void bezier_patch(std::ifstream &infile, std::ofstream &file, int tecel){
         for(int k=0; k<tecel; k++){
             for(int v=0; v<tecel; v++){
 
-                Point p1 = joinPointVector(final_pts[i][k][v]   , cross(derivadasK[i][k][v]  , derivadasV[i][k][v]  ) ,0,0);//corrigir txt
-                Point p2 = joinPointVector(final_pts[i][k+1][v] , cross(derivadasK[i][k+1][v], derivadasV[i][k+1][v]) ,0,0);//corrigir txt
-                Point p3 = joinPointVector(final_pts[i][k][v+1] , cross(derivadasK[i][k][v+1], derivadasV[i][k][v+1]) ,0,0);//corrigir txt
+                Point p1 = joinPointVector(final_pts[i][k][v]   , cross(derivadasK[i][k][v]  , derivadasV[i][k][v]  ) ,0.0f,0.0f);//corrigir txt
+                Point p2 = joinPointVector(final_pts[i][k+1][v] , cross(derivadasK[i][k+1][v], derivadasV[i][k+1][v]) ,0.0f,0.0f);//corrigir txt
+                Point p3 = joinPointVector(final_pts[i][k][v+1] , cross(derivadasK[i][k][v+1], derivadasV[i][k][v+1]) ,0.0f,0.0f);//corrigir txt
                 write_point(p1,file); file<<std::endl;
                 write_point(p2,file); file<<std::endl;
                 write_point(p3,file); file<<std::endl;
                 
-                Point p4 = joinPointVector(final_pts[i][k][v+1]   , cross(derivadasK[i][k][v+1]  , derivadasV[i][k][v+1]  ) ,0,0);//corrigir txt
-                Point p5 = joinPointVector(final_pts[i][k+1][v]   , cross(derivadasK[i][k+1][v]  , derivadasV[i][k+1][v]  ) ,0,0);//corrigir txt
-                Point p6 = joinPointVector(final_pts[i][k+1][v+1] , cross(derivadasK[i][k+1][v+1], derivadasV[i][k+1][v+1]) ,0,0);//corrigir txt
+                Point p4 = joinPointVector(final_pts[i][k][v+1]   , cross(derivadasK[i][k][v+1]  , derivadasV[i][k][v+1]  ) ,0.0f,0.0f);//corrigir txt
+                Point p5 = joinPointVector(final_pts[i][k+1][v]   , cross(derivadasK[i][k+1][v]  , derivadasV[i][k+1][v]  ) ,0.0f,0.0f);//corrigir txt
+                Point p6 = joinPointVector(final_pts[i][k+1][v+1] , cross(derivadasK[i][k+1][v+1], derivadasV[i][k+1][v+1]) ,0.0f,0.0f);//corrigir txt
                 write_point(p4,file); file<<std::endl;
                 write_point(p5,file); file<<std::endl;
                 write_point(p5,file); file<<std::endl;
+
+                free(p1);free(p2);free(p3);free(p4);free(p5);free(p6);
             }
         }
     }
@@ -128,6 +129,8 @@ void gen_bezier(char** args){
     file.open(args[4]);
 
     bezier_patch(infile,file, tecelagem);
+
+    file.close();
 }
 
 void drawTorusRing(int mainSegments, int tubeSegments, float mainRadius, float tubeRadius, std::ofstream& file){
@@ -712,11 +715,11 @@ void generate_cone(float radius, float height, int slices , float stacks, std::o
         float c1 = radius*cos(i*alpha);
         float c2 = radius*cos((i+1)*alpha);
 
-        write_point(s2, 0.0f, c2, 0.0f, -1.0f, 0.0f, 0, 0, file);//ignore texture
+        write_point(s2, 0.0f, c2, 0.0f, -1.0f, 0.0f, tx+textXstep, 0.0f, file);//ignore texture
         file<<std::endl;
-        write_point(s1, 0.0f, c1, 0.0f, -1.0f, 0.0f, 0, 0, file);//ignore texture
+        write_point(s1, 0.0f, c1, 0.0f, -1.0f, 0.0f, tx, 0.0f, file);//ignore texture
         file<<std::endl;
-        write_point(0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0, 0, file);//ignore texture
+        write_point(0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.5f, 0.5f, file);//ignore texture
         file<<std::endl;
 
         for(int jaux=0;(float)jaux<stacks;jaux++){
